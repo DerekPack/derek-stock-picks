@@ -99,6 +99,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .gate-adj{font-size:9px;font-weight:700;padding:2px 7px;border-radius:7px;font-family:var(--mono)}
 .gate-src{font-size:9px;font-family:var(--mono);opacity:.45;margin-top:5px}
 
+/* delta report */
+.delta-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:13px;overflow:hidden}
+.delta-hdr{display:flex;align-items:center;gap:8px;padding:10px 15px;cursor:pointer;user-select:none}
+.delta-hdr:hover{background:var(--bg3)}
+.delta-title{font-size:11px;font-weight:700;color:var(--text2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;flex:1}
+.delta-session{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;font-weight:700}
+.delta-body{padding:0 15px 12px;font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border)}
+.delta-chev{transition:transform .2s;flex-shrink:0;color:var(--text3)}
+.delta-chev.open{transform:rotate(180deg)}
+/* streak badge on pick cards */
+.streak-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:10px;background:rgba(255,152,0,.15);color:#ff9800;border:1px solid rgba(255,152,0,.3)}
+.streak-badge.hot{background:rgba(239,83,80,.15);color:#ef5350;border-color:rgba(239,83,80,.3)}
+.new-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:10px;background:rgba(38,166,154,.15);color:#26a69a;border:1px solid rgba(38,166,154,.3)}
+
 /* economic calendar */
 .cal-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;margin-bottom:13px}
 .cal-hdr{display:flex;align-items:center;gap:8px;margin-bottom:9px}
@@ -323,6 +337,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 
   <div id="gate-wrap"></div>
   <div id="calendar-wrap"></div>
+  <div id="delta-wrap"></div>
   <div id="macro-wrap"></div>
   <div id="sector-wrap"></div>
   <div id="picks-wrap" class="picks-grid" style="display:none"></div>
@@ -1541,6 +1556,9 @@ function render(d){
   if(d.picks) savePicks(d.picks,d.date);
   renderGateBar(d.gate?.raw||getGate());
 
+  // Delta report
+  renderDelta(d);
+
   // Calendar — merge Claude-surfaced events with any already rendered from API
   const calEl = document.getElementById('calendar-wrap');
   if(calEl.innerHTML && d.market_events?.length){
@@ -1667,6 +1685,32 @@ async function verifyPrices(picks){
   });
 }
 
+function renderDelta(d){
+  const el = document.getElementById('delta-wrap');
+  if(!d.delta_summary && !d.prior_session){ el.innerHTML=''; return; }
+
+  const sessionColors = {
+    'early-morning': {bg:'rgba(156,39,176,.12)',t:'#9c27b0',label:'5:33 AM Early'},
+    'pre-market':    {bg:'rgba(33,150,243,.12)', t:'#2196f3',label:'6:30 AM Pre-Mkt'},
+    'evening':       {bg:'rgba(255,152,0,.12)',  t:'#ff9800',label:'5:00 PM Evening'},
+  };
+  const sc = sessionColors[d.session] || {bg:'rgba(255,255,255,.06)',t:'#aaa',label:d.session||'Scheduled'};
+  const priorLabel = d.prior_session
+    ? `vs ${sessionColors[d.prior_session.session]?.label || d.prior_session.session} ${d.prior_session.generated_at||''}`
+    : '';
+
+  el.innerHTML = `<div class="delta-wrap">
+    <div class="delta-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.delta-chev').classList.toggle('open')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${sc.t}" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <span class="delta-title">Changes from prior run</span>
+      <span class="delta-session" style="background:${sc.bg};color:${sc.t}">${sc.label}</span>
+      ${priorLabel?`<span style="font-size:10px;color:var(--text3);font-family:var(--mono)">${priorLabel}</span>`:''}
+      <svg class="delta-chev open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="delta-body" style="display:block">${d.delta_summary||'First run — no prior data to compare.'}</div>
+  </div>`;
+}
+
 function sigStyle(sig){
   if(sig==='Buy premarket') return {bg:'rgba(38,166,154,.15)',bdr:'rgba(38,166,154,.4)',t:'#26a69a',acc:'#26a69a'};
   if(sig==='Buy at VWAP')   return {bg:'rgba(33,150,243,.15)',bdr:'rgba(33,150,243,.4)',t:'#2196f3',acc:'#2196f3'};
@@ -1709,6 +1753,12 @@ function renderPick(p){
       <span>Recent downtrend detected (1d: ${chg1!=null?(chg1>=0?'+':'')+chg1.toFixed(1)+'%':'?'} / 3d: ${chg3!=null?(chg3>=0?'+':'')+chg3.toFixed(1)+'%':'?'}). Verify reversal catalyst before entering.</span>
     </div>`:'';
 
+  const streakBadge = p.streak_days >= 3
+    ? `<span class="streak-badge hot">🔥 ${p.streak_days}d streak</span>`
+    : p.streak_days === 2
+    ? `<span class="streak-badge">↑ Day 2</span>`
+    : `<span class="new-badge">NEW</span>`;
+
   return `<div class="pick-card" id="card-${p.ticker}">
     <div class="pick-accent" style="background:linear-gradient(90deg,${ss.acc},${ss.acc}55)"></div>
     <div class="pick-body">
@@ -1716,7 +1766,10 @@ function renderPick(p){
         <div class="pick-left">
           <div class="pick-rank" style="background:${rc}22;color:${rc}">#${p.rank}</div>
           <div>
-            <div class="pick-ticker">${p.ticker}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <div class="pick-ticker">${p.ticker}</div>
+              ${streakBadge}
+            </div>
             <div class="pick-name">${p.name||''}</div>
             <span class="pick-sector" style="background:${ss.bg};color:${ss.t}">${p.sector||''}</span>
             ${momHtml}
