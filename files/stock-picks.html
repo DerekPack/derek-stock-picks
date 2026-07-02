@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stock Picks — daily AI-curated stock ideas from trending sectors">
+<title>Stock Picks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4fb; --bg2:#ffffff; --bg3:#e8edf7;
+  --border:#dde3f0; --border2:#bcc5dc;
+  --text:#0d1117; --text2:#3d4966; --text3:#8090b0;
+  --green:#15803d; --green-bg:#f0fdf4; --green-mid:#dcfce7;
+  --red:#dc2626;   --red-bg:#fef2f2;   --red-mid:#fee2e2;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-mid:#fef3c7;
+  --blue:#1d4ed8;  --blue-bg:#eff6ff;  --blue-mid:#dbeafe;
+  --purple:#6d28d9; --purple-bg:#f5f3ff; --purple-mid:#ede9fe;
+  --cyan:#0e7490; --cyan-bg:#ecfeff; --cyan-mid:#cffafe;
+  --radius:16px; --radius-sm:10px; --radius-xs:6px;
+  --shadow:0 1px 4px rgba(13,17,23,0.07),0 1px 2px rgba(13,17,23,0.04);
+  --shadow-md:0 4px 20px rgba(13,17,23,0.09),0 2px 6px rgba(13,17,23,0.05);
+  --shadow-lg:0 8px 40px rgba(13,17,23,0.1),0 4px 10px rgba(13,17,23,0.05);
+  --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.container{max-width:740px;margin:0 auto;padding:0 18px 64px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 0 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0e7490 0%,#1d4ed8 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(14,116,144,0.3)}
+.appname{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.tagline{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.02em}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.ts{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;box-shadow:var(--shadow);font-family:var(--font)}
+.btn:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.btn:active{transform:scale(0.97)}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-primary{background:linear-gradient(135deg,#0e7490,#1d4ed8);color:#fff;border-color:transparent;font-weight:600;box-shadow:0 3px 10px rgba(14,116,144,0.3)}
+.btn-primary:hover{background:linear-gradient(135deg,#0c6477,#1e3a8a);color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--text3)}
+.btn-ghost:hover{background:var(--bg3);border-color:var(--border);color:var(--text2)}
+.btn-icon{padding:7px 9px}
+
+/* key screen */
+#key-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:22px;text-align:center}
+.key-icon{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#0e7490,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(14,116,144,0.3)}
+.key-title{font-size:22px;font-weight:700;letter-spacing:-.03em}
+.key-sub{font-size:13px;color:var(--text2);max-width:340px;line-height:1.7}
+.key-input-row{display:flex;gap:8px;width:100%;max-width:440px}
+.key-input{flex:1;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-shadow:var(--shadow)}
+.key-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(14,116,144,0.1)}
+.key-note{font-size:11px;color:var(--text3);max-width:360px;line-height:1.7}
+.key-note a{color:var(--blue);text-decoration:none}
+
+/* notify bars */
+.notify-bar{border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:8px;font-weight:500}
+.notify-bar svg{width:14px;height:14px;flex-shrink:0}
+.stale-bar{background:var(--amber-bg);border:1px solid #fde68a;color:var(--amber)}
+.error-bar{background:var(--red-bg);border:1px solid #fecaca;color:var(--red)}
+.resolved-bar{background:var(--green-bg);border:1px solid #bbf7d0;color:var(--green)}
+
+/* macro context banner */
+.macro-banner{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.macro-pill{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
+.macro-label{font-size:11px;color:var(--text2)}
+.macro-score{font-size:12px;font-weight:600;font-family:var(--mono);margin-left:auto;color:var(--text3)}
+
+/* sector strip */
+.sector-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.sector-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;border:1px solid;cursor:default;font-family:var(--mono)}
+
+/* picks grid */
+.picks-grid{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
+
+/* stock pick card */
+.pick-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);overflow:hidden}
+.pick-card-accent{height:3px}
+.pick-body{padding:20px 22px}
+.pick-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.pick-left{display:flex;align-items:center;gap:12px}
+.pick-rank{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.pick-ticker{font-size:26px;font-weight:700;letter-spacing:-.03em;font-family:var(--mono);line-height:1}
+.pick-name{font-size:11px;color:var(--text3);margin-top:2px}
+.pick-sector{font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;margin-top:4px;display:inline-block;font-family:var(--mono)}
+.pick-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pick-signal{font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.pick-timeframe{font-size:10px;font-family:var(--mono);color:var(--text3);text-align:right}
+.pick-conf{font-size:10px;font-weight:600;font-family:var(--mono)}
+
+/* pick meta row */
+.pick-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.pick-stat{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 10px}
+.ps-label{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.ps-val{font-size:14px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}
+
+/* entry strategy */
+.entry-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;border-left:3px solid}
+.entry-label{font-size:9px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.entry-items{display:flex;flex-direction:column;gap:4px}
+.entry-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2)}
+.entry-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* thesis + sentiment */
+.pick-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.thesis-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px}
+.box-label{font-size:9px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.thesis-text{font-size:11px;color:var(--text2);line-height:1.6}
+.sentiment-items{display:flex;flex-direction:column;gap:6px}
+.sent-item{display:flex;align-items:flex-start;gap:7px;font-size:10px;color:var(--text2);line-height:1.4}
+.sent-handle{font-family:var(--mono);font-size:9px;font-weight:600;flex-shrink:0;color:var(--cyan)}
+.sent-tone{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px}
+
+/* score banner */
+.score-banner{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow-md)}
+.score-banner:hover{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(14,116,144,0.06)}
+.sb-stat{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.sb-num{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:-.03em;line-height:1}
+.sb-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+.sb-divider{width:1px;height:40px;background:var(--border);flex-shrink:0}
+.sb-chevron{color:var(--text3);transition:transform .2s;flex-shrink:0}
+.sb-chevron.open{transform:rotate(180deg)}
+
+/* scorecard panel */
+.scorecard-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.sc-section{padding:16px 20px;border-bottom:1px solid var(--border)}
+.sc-section:last-child{border-bottom:none}
+.sc-title{font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.hist-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.hist-row:last-child{border-bottom:none}
+.hist-date{color:var(--text3);font-family:var(--mono);width:60px;flex-shrink:0}
+.hist-ticker{font-family:var(--mono);font-weight:700;width:56px;flex-shrink:0}
+.hist-signal{width:90px;flex-shrink:0}
+.hist-actual{width:64px;font-family:var(--mono);flex-shrink:0}
+.hist-result{width:20px;text-align:center;font-size:14px}
+
+/* disclaimer */
+.disclaimer{background:var(--amber-bg);border:1px solid #fde68a;border-radius:var(--radius-sm);padding:12px 16px;font-size:11px;color:var(--amber);line-height:1.6;margin-bottom:14px}
+.disclaimer strong{font-weight:600}
+
+/* loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(240,244,251,0.92);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:16px;backdrop-filter:blur(6px)}
+.loading-spinner{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+.loading-msg{font-size:13px;color:var(--text2);font-family:var(--mono)}
+
+/* footer */
+.footer-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.footer{font-size:11px;color:var(--text3);line-height:1.7;padding-top:4px}
+
+
+/* market gate bar */
+.gate-bar{border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;border:1px solid;box-shadow:var(--shadow-md)}
+.gate-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.gate-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:-.01em}
+.gate-score-wrap{display:flex;align-items:baseline;gap:4px}
+.gate-score{font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-.03em;line-height:1}
+.gate-score-max{font-size:12px;font-weight:500;color:var(--text3);font-family:var(--mono)}
+.gate-track{height:5px;border-radius:3px;background:rgba(0,0,0,0.08);overflow:hidden;margin-bottom:10px}
+.gate-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.gate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.gate-stat{border-radius:var(--radius-sm);padding:8px 10px;background:rgba(255,255,255,0.5)}
+.gs-label{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;opacity:.7}
+.gs-val{font-size:13px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}
+.gs-sub{font-size:9px;margin-top:2px;opacity:.7}
+.gate-verdict{font-size:11px;font-weight:500;padding-top:10px;border-top:1px solid rgba(0,0,0,0.08);line-height:1.5}
+.gate-adj-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.gate-adj{font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;font-family:var(--mono);background:rgba(255,255,255,0.6)}
+
+/* responsive */
+@media(max-width:520px){
+  .pick-meta{grid-template-columns:repeat(2,1fr)}
+  .pick-bottom{grid-template-columns:1fr}
+  .pick-ticker{font-size:22px}
+  .sector-strip{gap:6px}
+}
+</style>
+</head>
+<body>
+
+<!-- Key screen -->
+<div id="key-screen" style="display:none">
+<div class="container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:22px;text-align:center">
+  <div class="key-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+  </div>
+  <div>
+    <div class="key-title">Stock Picks</div>
+    <div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:4px">daily AI-curated picks · sector momentum · FinTwit signal</div>
+  </div>
+  <div class="key-sub">Paste your Anthropic API key. Stored only in your browser — never sent anywhere except directly to Anthropic.</div>
+  <div class="key-input-row">
+    <input class="key-input" id="key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    <button class="btn btn-primary" onclick="saveKey()">Connect</button>
+  </div>
+  <div class="key-note">Get a free key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com → Settings → API Keys</a><br>~$0.03–0.05 per refresh · under $2/month for daily use</div>
+</div>
+</div>
+
+<!-- Main app -->
+<div id="app" style="display:none">
+<div class="container">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span class="appname">Stock Picks</span>
+        <span class="tagline">sector momentum · FinTwit signal · entry strategy</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="ts" id="ts">—</span>
+      <button class="btn" id="refresh-btn" onclick="fetchAndRender()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-ghost btn-icon" onclick="clearKey()" title="Change key">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="resolved-bar" class="notify-bar resolved-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="resolved-msg"></span>
+  </div>
+  <div id="stale-bar" class="notify-bar stale-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Data may be stale — hit Refresh for today's picks
+  </div>
+  <div id="error-bar" class="notify-bar error-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="error-msg"></span>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Not financial advice.</strong> These are AI-generated pattern signals for informational purposes only. Always do your own research. Past accuracy does not predict future results. Never trade more than you can afford to lose.
+  </div>
+
+  <div id="gate-bar" style="display:none"></div>
+  <div id="macro-banner" style="display:none"></div>
+  <div id="sector-strip" style="display:none;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+  <div id="picks-grid" class="picks-grid" style="display:none"></div>
+
+  <div id="score-banner" style="display:none" class="score-banner" onclick="toggleScorecard()">
+    <div class="sb-stat" id="sb-overall"></div>
+    <div class="sb-divider"></div>
+    <div class="sb-stat" id="sb-streak"></div>
+    <div class="sb-divider"></div>
+    <div class="sb-stat" id="sb-signals"></div>
+    <svg class="sb-chevron" id="sb-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+  <div id="scorecard-panel" class="scorecard-panel" style="display:none"></div>
+
+  <div class="footer-actions" id="footer-actions" style="display:none">
+    <button class="btn" onclick="fetchAndRender()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Refresh picks
+    </button>
+    <button class="btn btn-ghost" onclick="resetHistory()" style="font-size:11px">Clear history</button>
+  </div>
+  <div class="footer" id="footer" style="display:none">
+    Sources: FinTwit accounts @FloridaRepCap @standuquesne @RossGivens_ @StockSwingAlert @unusual_whales @wickedstocks @fundstrat @HedgeyeTV @3Stocksaday @3BestStocks @stocktwits @alphatrends @KeithMcCullough @ZacksResearch · Finviz · Yahoo Finance · SEC filings · earnings calendars. API key stored in your browser only. <span style="cursor:pointer;text-decoration:underline" onclick="clearKey()">Change key</span>
+  </div>
+
+</div>
+</div>
+
+<div id="loading" class="loading-overlay" style="display:none">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loading-msg">Scanning trending sectors…</div>
+</div>
+
+<script>
+const K = { key:'sp_api_key', data:'sp_last_data', ts:'sp_last_ts', history:'sp_history', learned:'sp_learned', gate:'sp_gate' };
+const STALE_MS = 6*60*60*1000;
+
+// ── Robust JSON parser ────────────────────────────────────
+// Handles: markdown fences, trailing commas, smart quotes,
+// truncated arrays/objects, stray newlines in strings.
+function robustParseJSON(raw) {
+  if(!raw) throw new Error('Empty response');
+
+  // 1. Strip markdown fences
+  let text = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+
+  // 2. Extract outermost { } block
+  const start = text.indexOf('{');
+  const end   = text.lastIndexOf('}');
+  if(start < 0 || end < start) throw new Error('No JSON object found in response');
+  text = text.slice(start, end + 1);
+
+  // 3. Replace smart/curly quotes with straight quotes
+  text = text
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"');
+
+  // 4. Remove trailing commas before } or ] (common LLM mistake)
+  text = text.replace(/,\s*([\]}])/g, '$1');
+
+  // 5. Try straight parse first
+  try { return JSON.parse(text); } catch(e1) {
+    // 6. Fix unescaped newlines inside strings
+    try {
+      const fixed = text.replace(/"((?:[^"\]|\.)*)"/g, (match, inner) => {
+        return '"' + inner.replace(/
+/g,'\n').replace(//g,'\r').replace(/	/g,'\t') + '"';
+      });
+      return JSON.parse(fixed);
+    } catch(e2) {
+      // 7. Last resort — truncated JSON: close any open arrays/objects
+      try {
+        let t = text;
+        // Count open brackets
+        let opens = 0, inStr = false, escape = false;
+        const stack = [];
+        for(let i=0;i<t.length;i++){
+          const c=t[i];
+          if(escape){escape=false;continue;}
+          if(c==='\'){escape=true;continue;}
+          if(c==='"'){inStr=!inStr;continue;}
+          if(inStr) continue;
+          if(c==='{'||c==='[') stack.push(c);
+          if(c==='}'||c===']') stack.pop();
+        }
+        // Remove trailing comma before we close
+        t = t.replace(/,\s*$/, '');
+        // Close unclosed structures
+        while(stack.length){
+          const last = stack.pop();
+          t += last==='{' ? '}' : ']';
+        }
+        return JSON.parse(t);
+      } catch(e3) {
+        throw new Error('JSON parse failed: ' + e1.message);
+      }
+    }
+  }
+}
+
+
+// ── Influencer list for search context ───────────────────
+const FINTWIT = [
+  '@FloridaRepCap','@standuquesne','@RossGivens_','@StockSwingAlert',
+  '@unusual_whales','@wickedstocks','@fundstrat','@HedgeyeTV',
+  '@3Stocksaday','@3BestStocks','@stocktwits','@alphatrends',
+  '@KeithMcCullough','@ZacksResearch','@Hedgeye','@HedgeyeFIG','@HedgeyeUSA'
+];
+
+// ── Storage ───────────────────────────────────────────────
+function getKey(){ return localStorage.getItem(K.key)||''; }
+function getHistory(){ try{ return JSON.parse(localStorage.getItem(K.history)||'[]'); }catch(e){return[];} }
+function saveHistory(h){ localStorage.setItem(K.history, JSON.stringify(h)); }
+
+function saveKey(){
+  const v=document.getElementById('key-input').value.trim();
+  if(!v.startsWith('sk-ant-')){ alert("Doesn't look like a valid Anthropic key (should start with sk-ant-)"); return; }
+  localStorage.setItem(K.key,v);
+  document.getElementById('key-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  fetchAndRender();
+}
+function clearKey(){
+  localStorage.removeItem(K.key);
+  document.getElementById('key-input').value='';
+  document.getElementById('app').style.display='none';
+  document.getElementById('key-screen').style.display='flex';
+}
+function resetHistory(){
+  if(!confirm('Clear all pick history and accuracy data?')) return;
+  localStorage.removeItem(K.history);
+  localStorage.removeItem(K.learned);
+  renderScorecard();
+  alert('History and learned preferences cleared.');
+}
+document.getElementById('key-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveKey(); });
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('load', async ()=>{
+  const key = getKey();
+  if(!key){ document.getElementById('key-screen').style.display='flex'; return; }
+  document.getElementById('app').style.display='block';
+  await tryAutoResolve();
+  const raw=localStorage.getItem(K.data), ts=localStorage.getItem(K.ts);
+  if(raw && ts){
+    try{
+      render(JSON.parse(raw));
+      if(Date.now()-parseInt(ts,10)>STALE_MS) document.getElementById('stale-bar').style.display='flex';
+    } catch(e){ fetchAndRender(); }
+  } else { fetchAndRender(); }
+});
+
+// ── Auto-resolve yesterday's picks ───────────────────────
+async function tryAutoResolve(){
+  const hist = getHistory();
+  const pending = hist.filter(p=>p.status==='pending');
+  if(!pending.length) return;
+  const now = new Date();
+  const etMin = ((now.getUTCHours()*60+now.getUTCMinutes()-300+1440)%1440);
+  if(etMin < 585) return; // before 9:45am ET
+  for(const p of pending){
+    if(new Date(p.savedAt).toDateString()===now.toDateString()) continue;
+    try{
+      const result = await fetchActualMove(p.ticker, p.date);
+      if(result !== null){
+        const correct = isCallCorrect(p.signal, result);
+        p.actualPct = result;
+        p.status = correct ? 'correct' : 'wrong';
+        p.resolvedAt = Date.now();
+      }
+    } catch(e){}
+  }
+  saveHistory(hist);
+  runLearning(); // update learned model after resolution
+  const justResolved = hist.filter(p=>p.resolvedAt && Date.now()-p.resolvedAt<90000);
+  if(justResolved.length){
+    const correct = justResolved.filter(p=>p.status==='correct').length;
+    document.getElementById('resolved-msg').textContent =
+      `Yesterday's picks resolved: ${correct}/${justResolved.length} correct · scorecard updated`;
+    document.getElementById('resolved-bar').style.display='flex';
+    setTimeout(()=>{ document.getElementById('resolved-bar').style.display='none'; },8000);
+  }
+}
+
+async function fetchActualMove(ticker, dateStr){
+  const key=getKey(); if(!key) return null;
+  const prompt=`Search for the stock ${ticker} opening price today versus yesterday's close. Return ONLY: {"open_pct": <number>} where open_pct is the percent change of today's open vs yesterday's close. If not found: {"open_pct": null}. No prose.`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:100,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    try {
+      const r = robustParseJSON(text);
+      return r.open_pct ?? null;
+    } catch(pe){ return null; }
+  } catch(e){ return null; }
+}
+
+function isCallCorrect(signal, actualPct){
+  if(signal==='Buy premarket')  return actualPct > 0.3;
+  if(signal==='Buy at VWAP')    return actualPct > -0.3;
+  if(signal==='Wait for dip')   return actualPct > 0;
+  if(signal==='Watch only')     return true; // watch-only is always informational
+  return false;
+}
+
+
+
+// ── Read Market Pulse cached data (shared localStorage) ──────────────────────
+// Market Pulse writes 'mp_last_data' — we read it here to align macro context.
+function getMarketPulseData(){
+  try{
+    const raw = localStorage.getItem('mp_last_data');
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    // Recompute composite using same weights as Market Pulse
+    const fg_s  = Math.min(100,Math.max(0, d.fg>=60?60+(d.fg-60)*0.8:d.fg));
+    const pct_ma = (d.qqq_close-d.qqq_ma50)/d.qqq_ma50*100;
+    const pct_day= (d.qqq_close-d.qqq_prev_close)/d.qqq_prev_close*100;
+    const mom_s  = Math.min(100,Math.max(0, 50+pct_ma*3+pct_day*6));
+    const ratio  = d.hy_spread/4.5;
+    const cred_s = ratio<0.4?85:ratio<0.6?75:ratio<0.8?65:ratio<1.0?55:ratio<1.2?45:ratio<1.5?35:20;
+    let vix_s    = d.vix_close<15?80:d.vix_close<20?65:d.vix_close<25?45:d.vix_close<30?30:15;
+    const vt     = (d.vix_prev-d.vix_close)/d.vix_prev*100;
+    if(vt>5) vix_s=Math.min(100,vix_s+8); else if(vt<-5) vix_s=Math.max(0,vix_s-8);
+    const absp   = d.aaii_bull-d.aaii_bear;
+    const aaii_s = absp<-20?80:absp<-10?70:absp<0?60:absp<10?50:absp<20?40:30;
+    const rsi_s  = d.spy_rsi<30?75:d.spy_rsi<40?65:d.spy_rsi<=60?50:d.spy_rsi<=70?35:20;
+    const ysp    = d.y10-d.y2;
+    const yld_s  = ysp>1.5?75:ysp>0.5?60:ysp>0?50:ysp>-0.5?35:20;
+    const comp   = Math.round(fg_s*.25+mom_s*.22+cred_s*.15+vix_s*.13+aaii_s*.10+rsi_s*.08+yld_s*.07);
+    const tier   = comp>=65?'Strong Bull':comp>=55?'Bullish':comp>=45?'Neutral':comp>=35?'Bearish':'Strong Bear';
+    return { composite:comp, tier, fg:d.fg, vix:d.vix_close, hy_spread:d.hy_spread, date:d.date };
+  } catch(e){ return null; }
+}
+
+// ══════════════════════════════════════════════════════════
+// ── MARKET CONDITIONS GATE ─────────────────────────────────
+// Fetches NQ/ES futures, VIX, key sector ETFs, and scores
+// the overall environment 0-100. Adjusts pick confidence
+// and signals BEFORE they reach the user.
+// ══════════════════════════════════════════════════════════
+
+function getGate(){ try{ return JSON.parse(localStorage.getItem(K.gate)||'null'); } catch(e){ return null; } }
+function saveGate(g){ localStorage.setItem(K.gate, JSON.stringify(g)); }
+
+const GATE_PROMPT = `You are a market conditions analyst. Fetch the following data RIGHT NOW and return ONLY a JSON object — no prose, no markdown fences.
+
+Search for each of these:
+1. "NQ futures price today" and "ES futures price today" — get current % change vs prior close
+2. "VIX index today" — current level
+3. "SMH ETF today" (semiconductors), "XBI today" (biotech), "XLE today" (energy), "XLF today" (financials), "QQQ today", "SPY today" — get each ETF's % change today
+4. "10 year treasury yield today" — current yield
+5. "put call ratio today" or "options sentiment today" — overall market put/call ratio
+
+Return this exact JSON structure:
+{
+  "nq_chg": <NQ futures % change e.g. -0.45>,
+  "es_chg": <ES futures % change>,
+  "vix": <VIX current level>,
+  "vix_trend": "<rising|falling|flat>",
+  "qqq_chg": <QQQ % change today>,
+  "spy_chg": <SPY % change today>,
+  "smh_chg": <SMH % change>,
+  "xbi_chg": <XBI % change>,
+  "xle_chg": <XLE % change>,
+  "xlf_chg": <XLF % change>,
+  "yield_10y": <10Y Treasury yield %>,
+  "put_call": <put/call ratio e.g. 0.85>,
+  "timestamp": "<HH:MM ET>"
+}
+
+Return ONLY the JSON.`;
+
+async function fetchGate(){
+  const key = getKey(); if(!key) return null;
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:600,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:GATE_PROMPT}]
+      })
+    });
+    if(!resp.ok) return null;
+    const data = await resp.json();
+    const text = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const g = robustParseJSON(text);
+    saveGate(g);
+    return g;
+  } catch(err){ return null; }
+}
+
+function scoreGate(g, mpData){
+  if(!g) return { score:50, label:'Unknown', color:'#8090b0', bg:'#f0f4fb', border:'#dde3f0', adjustments:[], verdict:'No market conditions data available.', mpData:null, divergence:null };
+
+  let score = 50;
+  const adj = [];
+  // Pull Market Pulse if not passed in
+  if(!mpData) mpData = getMarketPulseData();
+
+  // ── NQ futures (most important — direct next-day open signal) ──
+  const nq = g.nq_chg || 0;
+  if(nq > 1.5)       { score += 20; adj.push({text:'NQ futures +'+(nq.toFixed(2))+'%', type:'bull'}); }
+  else if(nq > 0.5)  { score += 10; adj.push({text:'NQ futures +'+(nq.toFixed(2))+'%', type:'bull'}); }
+  else if(nq > -0.5) { /* neutral */ }
+  else if(nq > -1.5) { score -= 12; adj.push({text:'NQ futures '+(nq.toFixed(2))+'%', type:'bear'}); }
+  else               { score -= 22; adj.push({text:'NQ futures '+(nq.toFixed(2))+'% ⚠', type:'bear'}); }
+
+  // ── ES futures (confirmation) ──
+  const es = g.es_chg || 0;
+  if(es > 0.5)  { score += 5; }
+  else if(es < -0.5) { score -= 5; }
+  // Divergence between NQ and ES is a warning sign
+  if(Math.sign(nq) !== Math.sign(es) && Math.abs(nq)>0.5 && Math.abs(es)>0.5){
+    score -= 5; adj.push({text:'NQ/ES divergence — caution', type:'warn'});
+  }
+
+  // ── VIX ──
+  const vix = g.vix || 20;
+  if(vix < 15)       { score += 12; adj.push({text:'VIX '+vix.toFixed(1)+' — low fear', type:'bull'}); }
+  else if(vix < 20)  { score += 5; }
+  else if(vix < 25)  { score -= 5; }
+  else if(vix < 30)  { score -= 15; adj.push({text:'VIX '+vix.toFixed(1)+' — elevated fear', type:'bear'}); }
+  else               { score -= 25; adj.push({text:'VIX '+vix.toFixed(1)+' — high fear ⚠', type:'bear'}); }
+  if(g.vix_trend==='rising')  { score -= 5; adj.push({text:'VIX rising trend', type:'warn'}); }
+  if(g.vix_trend==='falling') { score += 5; adj.push({text:'VIX falling — risk on', type:'bull'}); }
+
+  // ── Sector ETF breadth (how many sectors are green) ──
+  const etfs = [g.smh_chg, g.xbi_chg, g.xle_chg, g.xlf_chg].filter(v=>v!=null);
+  const greenCount = etfs.filter(v=>v>0).length;
+  const breadthPct = etfs.length ? greenCount/etfs.length : 0.5;
+  if(breadthPct >= 0.75)      { score += 8; adj.push({text:'Strong breadth — '+greenCount+'/'+etfs.length+' sectors green', type:'bull'}); }
+  else if(breadthPct <= 0.25) { score -= 8; adj.push({text:'Weak breadth — '+greenCount+'/'+etfs.length+' sectors green', type:'bear'}); }
+
+  // ── SMH specifically (semiconductors drive NASDAQ) ──
+  const smh = g.smh_chg || 0;
+  if(smh > 1.5)  { score += 8; adj.push({text:'SMH (semis) +'+(smh.toFixed(1))+'% — NASDAQ tailwind', type:'bull'}); }
+  else if(smh < -1.5) { score -= 8; adj.push({text:'SMH (semis) '+(smh.toFixed(1))+'% — NASDAQ headwind', type:'bear'}); }
+
+  // ── Put/call ratio ──
+  const pc = g.put_call || 0.85;
+  if(pc < 0.7)  { score += 5; adj.push({text:'Put/call '+pc.toFixed(2)+' — bullish options flow', type:'bull'}); }
+  if(pc > 1.1)  { score -= 8; adj.push({text:'Put/call '+pc.toFixed(2)+' — defensive hedging', type:'bear'}); }
+
+  // ── 10Y yield (higher = headwind for growth/NASDAQ) ──
+  const y10 = g.yield_10y || 4.5;
+  if(y10 > 4.8) { score -= 5; adj.push({text:'10Y yield '+y10.toFixed(2)+'% — rate headwind', type:'warn'}); }
+  if(y10 < 4.0) { score += 5; }
+
+  // ── Market Pulse macro blend (30% weight) ──────────────────────────────────
+  // Gate is primarily short-term (futures, VIX, breadth).
+  // Market Pulse covers the macro backdrop (F&G, credit, AAII, yield curve).
+  // Blend them so both timeframes are represented in one score.
+  let mpScore = null, divergence = null;
+  if(mpData && mpData.composite){
+    mpScore = mpData.composite;
+    // Weighted blend: 70% short-term gate + 30% Market Pulse macro
+    score = Math.round(score * 0.70 + mpScore * 0.30);
+    // Detect divergence — they disagree significantly
+    const gatePure = Math.round(
+      (()=>{
+        // recalc raw gate score without blend for divergence check
+        let s2=50;
+        const nq2=g.nq_chg||0;
+        if(nq2>1.5)s2+=20; else if(nq2>0.5)s2+=10; else if(nq2<-1.5)s2-=22; else if(nq2<-0.5)s2-=12;
+        const vix2=g.vix||20;
+        if(vix2<15)s2+=12; else if(vix2<20)s2+=5; else if(vix2<25)s2-=5; else if(vix2<30)s2-=15; else s2-=25;
+        return Math.max(0,Math.min(100,s2));
+      })()
+    );
+    const diff = Math.abs(gatePure - mpScore);
+    if(diff >= 20){
+      const gateDir = gatePure >= 50 ? 'bullish' : 'bearish';
+      const mpDir   = mpScore  >= 50 ? 'bullish' : 'bearish';
+      if(gateDir !== mpDir){
+        divergence = {
+          gateScore: gatePure, mpScore,
+          msg: `Market Pulse macro (${mpScore}/100 ${mpData.tier}) differs from short-term gate (${gatePure}/100). ` +
+               (gatePure > mpScore
+                 ? 'Futures/VIX suggest strength today but macro backdrop is weak — be selective, use tight stops.'
+                 : 'Macro backdrop is solid but short-term conditions are cautious — wait for better entry.')
+        };
+        adj.push({text:'Macro/gate divergence ⚠', type:'warn'});
+      }
+    }
+    adj.push({text:'Market Pulse macro: '+mpScore+'/100 ('+mpData.tier+')', type: mpScore>=55?'bull':mpScore>=45?'warn':'bear'});
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Label and color
+  let label, color, bg, border, verdict;
+  if(score >= 72){
+    label='Strong go'; color='#15803d'; bg='#f0fdf4'; border='#86efac';
+    verdict='Conditions strongly favor long setups. Full conviction on top picks. Premarket entries valid.';
+  } else if(score >= 58){
+    label='Go'; color='#16a34a'; bg='#f0fdf4'; border='#bbf7d0';
+    verdict='Conditions are favorable. Standard entries apply. Watch for confirmation at VWAP.';
+  } else if(score >= 45){
+    label='Proceed with caution'; color='#d97706'; bg='#fffbeb'; border='#fde68a';
+    verdict='Mixed conditions. Downgrade high→medium confidence. Prefer VWAP entries over premarket. Tighten stops.';
+  } else if(score >= 32){
+    label='Wait'; color='#dc2626'; bg='#fef2f2'; border='#fecaca';
+    verdict='Conditions are unfavorable. Downgrade all signals one level. No premarket entries. Swing trades only with wide stops.';
+  } else {
+    label='Stand down'; color='#991b1b'; bg='#fef2f2'; border='#f87171';
+    verdict='Market conditions are hostile. Only Watch Only signals. Consider no entries today.';
+  }
+
+  return { score, label, color, bg, border, adjustments:adj, verdict, raw:g, mpScore, divergence };
+}
+
+function applyGateToPicksData(picksData, gate){
+  if(!gate || !picksData.picks) return picksData;
+  const gs = scoreGate(gate);
+  const adjusted = JSON.parse(JSON.stringify(picksData)); // deep clone
+
+  adjusted.gate = gs;
+  adjusted.picks = adjusted.picks.map(p=>{
+    const pick = {...p};
+    pick.gateOriginalSignal = p.signal;
+    pick.gateOriginalConf   = p.confidence;
+    pick.gateAdj = null;
+
+    // Score < 45: no premarket buys — downgrade to VWAP
+    if(gs.score < 45 && pick.signal === 'Buy premarket'){
+      pick.signal = 'Buy at VWAP';
+      pick.gateAdj = 'premarket→VWAP (weak conditions)';
+    }
+    // Score < 32: everything becomes wait-or-watch
+    if(gs.score < 32){
+      if(pick.signal === 'Buy premarket' || pick.signal === 'Buy at VWAP'){
+        pick.signal = 'Wait for dip';
+        pick.gateAdj = 'downgraded (hostile conditions)';
+      }
+      if(pick.confidence === 'high') pick.confidence = 'medium';
+    }
+    // Score < 20: everything is Watch Only
+    if(gs.score < 20){
+      pick.signal = 'Watch only';
+      pick.confidence = 'low';
+      pick.gateAdj = 'watch only (stand down)';
+    }
+    // Score >= 72: boost medium→high for top-ranked picks
+    if(gs.score >= 72 && pick.rank <= 2 && pick.confidence === 'medium'){
+      pick.confidence = 'high';
+      pick.gateAdj = 'confidence boosted (strong conditions)';
+    }
+    return pick;
+  });
+
+  return adjusted;
+}
+
+function buildGateContext(gate){
+  if(!gate) return '';
+  const mpData = getMarketPulseData();
+  const gs = scoreGate(gate, mpData);
+  const mpLine = mpData
+    ? `Market Pulse macro: ${mpData.composite}/100 (${mpData.tier}) — F&G:${mpData.fg}, VIX:${mpData.vix?.toFixed(1)}, HY:${mpData.hy_spread}%`
+    : 'Market Pulse: not synced — open Market Pulse and refresh first';
+  const divLine = gs.divergence
+    ? `DIVERGENCE WARNING: ${gs.divergence.msg}`
+    : '';
+  const gateScoreRaw = gs.divergence ? gs.divergence.gateScore : gs.score;
+  return `\n\n━━ MARKET CONDITIONS GATE (blended score: ${gs.score}/100 — ${gs.label}) ━━
+${mpLine}
+NQ: ${(gate.nq_chg>=0?'+':'')}${gate.nq_chg?.toFixed(2)}% | ES: ${(gate.es_chg>=0?'+':'')}${gate.es_chg?.toFixed(2)}% | VIX: ${gate.vix?.toFixed(1)} (${gate.vix_trend})
+SMH: ${(gate.smh_chg>=0?'+':'')}${gate.smh_chg?.toFixed(1)}% | SPY: ${(gate.spy_chg>=0?'+':'')}${gate.spy_chg?.toFixed(1)}% | QQQ: ${(gate.qqq_chg>=0?'+':'')}${gate.qqq_chg?.toFixed(1)}%
+10Y yield: ${gate.yield_10y?.toFixed(2)}% | Put/call: ${gate.put_call?.toFixed(2)}
+${divLine}
+Gate verdict: ${gs.verdict}
+${gs.score < 45 ? 'IMPORTANT: Do NOT assign Buy premarket — use Buy at VWAP or Wait for dip.' : ''}
+${gs.score < 32 ? 'IMPORTANT: Use only Wait for dip or Watch only. Reduce all confidence by one tier.' : ''}
+${gs.score >= 72 ? 'IMPORTANT: Conditions are strong — full conviction on top picks is appropriate.' : ''}
+━━ END GATE ━━`;
+}
+
+function renderGateBar(gate){
+  const el = document.getElementById('gate-bar');
+  if(!gate){ el.style.display='none'; return; }
+  const gs = scoreGate(gate);
+
+  const adjHtml = gs.adjustments.slice(0,4).map(a=>{
+    const c = a.type==='bull'?{bg:'rgba(21,128,61,0.1)',t:'#15803d'}:a.type==='bear'?{bg:'rgba(220,38,38,0.1)',t:'#dc2626'}:{bg:'rgba(180,83,9,0.1)',t:'#b45309'};
+    return `<span class="gate-adj" style="background:${c.bg};color:${c.t}">${a.text}</span>`;
+  }).join('');
+
+  el.innerHTML = `<div class="gate-bar" style="background:${gs.bg};border-color:${gs.border}">
+    <div class="gate-top">
+      <div class="gate-title" style="color:${gs.color}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${gs.color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Market Gate · ${gs.label}
+      </div>
+      <div class="gate-score-wrap">
+        <span class="gate-score" style="color:${gs.color}">${gs.score}</span>
+        <span class="gate-score-max">/100</span>
+      </div>
+    </div>
+    <div class="gate-track"><div class="gate-fill" style="width:${gs.score}%;background:${gs.color}"></div></div>
+    <div class="gate-grid">
+      <div class="gate-stat" style="background:rgba(255,255,255,0.5)">
+        <div class="gs-label" style="color:${gs.color}">NQ futures</div>
+        <div class="gs-val" style="color:${(gate.nq_chg||0)>=0?'#15803d':'#dc2626'}">${(gate.nq_chg>=0?'+':'')}${gate.nq_chg?.toFixed(2)||'—'}%</div>
+        <div class="gs-sub" style="color:${gs.color}">E-mini overnight</div>
+      </div>
+      <div class="gate-stat">
+        <div class="gs-label" style="color:${gs.color}">VIX</div>
+        <div class="gs-val" style="color:${(gate.vix||20)<20?'#15803d':(gate.vix||20)<27?'#d97706':'#dc2626'}">${gate.vix?.toFixed(1)||'—'}</div>
+        <div class="gs-sub" style="color:${gs.color}">${gate.vix_trend||'—'}</div>
+      </div>
+      <div class="gate-stat">
+        <div class="gs-label" style="color:${gs.color}">Semis (SMH)</div>
+        <div class="gs-val" style="color:${(gate.smh_chg||0)>=0?'#15803d':'#dc2626'}">${(gate.smh_chg>=0?'+':'')}${gate.smh_chg?.toFixed(1)||'—'}%</div>
+        <div class="gs-sub" style="color:${gs.color}">NASDAQ proxy</div>
+      </div>
+      <div class="gate-stat">
+        <div class="gs-label" style="color:${gs.color}">Put/Call</div>
+        <div class="gs-val" style="color:${(gate.put_call||0.85)<0.8?'#15803d':(gate.put_call||0.85)>1.0?'#dc2626':'#d97706'}">${gate.put_call?.toFixed(2)||'—'}</div>
+        <div class="gs-sub" style="color:${gs.color}">${(gate.put_call||0.85)<0.8?'bullish flow':(gate.put_call||0.85)>1.0?'hedging':'neutral'}</div>
+      </div>
+    </div>
+    <div class="gate-verdict" style="color:${gs.color}">${gs.verdict}</div>
+    ${adjHtml?`<div class="gate-adj-row">${adjHtml}</div>`:''}
+    ${gs.divergence ? `
+    <div style="margin-top:10px;padding:10px 12px;background:rgba(180,83,9,0.08);border-radius:8px;border-left:3px solid #d97706">
+      <div style="font-size:10px;font-weight:700;color:#b45309;font-family:var(--mono);margin-bottom:4px">⚠ MACRO / GATE DIVERGENCE</div>
+      <div style="font-size:11px;color:#92400e;line-height:1.5">${gs.divergence.msg}</div>
+      <div style="display:flex;gap:12px;margin-top:7px">
+        <span style="font-size:10px;font-family:var(--mono);color:#b45309">Gate (short-term): <strong>${gs.divergence.gateScore}/100</strong></span>
+        <span style="font-size:10px;font-family:var(--mono);color:#b45309">Market Pulse (macro): <strong>${gs.divergence.mpScore}/100</strong></span>
+      </div>
+    </div>` : ''}
+    ${gs.mpScore!==null ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.07)">
+      <span style="font-size:10px;color:${gs.color};font-family:var(--mono);opacity:0.8">Market Pulse macro score</span>
+      <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:${gs.mpScore>=55?'#15803d':gs.mpScore>=45?'#d97706':'#dc2626'}">${gs.mpScore}/100 · ${getMarketPulseData()?.tier||'—'}</span>
+    </div>` : `
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.07);font-size:10px;color:${gs.color};opacity:0.7;font-family:var(--mono)">
+      Open Market Pulse and refresh to sync macro score →
+    </div>`}
+  </div>`;
+  el.style.display='block';
+}
+
+// ── System prompt ─────────────────────────────────────────
+const SYSTEM_PROMPT = `You are a professional stock analyst and day trader. Your job is to identify 4-5 high-quality stock picks for the NEXT trading day using current market data, sector momentum, technical setup, and social sentiment from FinTwit.
+
+IMPORTANT CONSTRAINTS:
+- US stocks only (NASDAQ/NYSE)
+- No penny stocks (min $10 price, min $500M market cap)
+- Focus on stocks with active FinTwit conversation or unusual options activity
+- Use current sector momentum — favor sectors showing relative strength today
+- Bias toward stocks with a clear catalyst (earnings beat, FDA catalyst, contract win, analyst upgrade, sector rotation)
+- No more than 2 picks from the same sector
+
+KEY FINTWIT ACCOUNTS TO RESEARCH (search their recent posts for stock mentions):
+@FloridaRepCap (value/momentum/insider buying), @standuquesne (macro/positioning),
+@RossGivens_ (swing trades), @StockSwingAlert (swing setups), @unusual_whales (options flow),
+@wickedstocks (technical analysis/TA), @fundstrat / Tom Lee (market outlook),
+@HedgeyeTV / @KeithMcCullough (macro risk), @3Stocksaday (daily setups),
+@3BestStocks (daily top 3 stock ideas), @stocktwits (retail sentiment aggregator),
+@alphatrends / Brian Shannon (VWAP methodology, multiple timeframe analysis),
+@ZacksResearch (earnings/ratings)
+
+SIGNAL TYPES — assign one per pick:
+- "Buy premarket": Strong overnight catalyst, gap up likely, buy before 9:30am ET
+- "Buy at VWAP": Wait for opening volatility to settle, buy when price returns to VWAP (~10-11am)
+- "Wait for dip": Bullish setup but extended, buy on 1-3% pullback from open
+- "Watch only": Interesting setup but needs confirmation — observe, don't enter yet
+
+TIMEFRAME — assign one per pick:
+- "Day trade": Open to close, same day
+- "Swing 1-3d": Hold 1-3 trading days
+- "Swing 1wk": Hold up to 1 week
+
+Return ONLY a valid JSON object — no prose, no markdown, no fences:
+{
+  "date": "<today's date like 'Jun 9'>",
+  "macro_bias": "<Bull/Bear/Neutral>",
+  "macro_score": <0-100 composite>,
+  "macro_note": "<1 sentence on why macro is favorable/unfavorable>",
+  "trending_sectors": [
+    {"name": "AI / Semiconductors", "bias": "bull", "reason": "NVDA upgrade, SMH +2.3%"},
+    {"name": "Energy", "bias": "bear", "reason": "crude -3%, IEA demand cut"},
+    {"name": "Biotech", "bias": "bull", "reason": "FDA approval wave, XBI breakout"}
+  ],
+  "picks": [
+    {
+      "rank": 1,
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "sector": "AI / Semiconductors",
+      "price": 135.40,
+      "signal": "Buy at VWAP",
+      "timeframe": "Swing 1-3d",
+      "confidence": "high",
+      "entry": 134.00,
+      "target": 142.00,
+      "stop": 130.00,
+      "catalyst": "Analyst upgraded to $160 PT, data center order beat",
+      "technical": "Broke 50d MA resistance on volume, RSI 58 not overbought",
+      "thesis": "2-3 sentences on why this stock, what the setup is, and what could make it move",
+      "entry_strategy": [
+        "Premarket: watch for gap above $134 on volume",
+        "If gap up: wait for VWAP (~$135) and buy on first pullback to VWAP",
+        "If flat open: buy break above $136 with volume confirmation"
+      ],
+      "fintwit_sentiment": [
+        {"handle": "@alphatrends", "tone": "bull", "note": "flagged NVDA breakout setup on weekly chart"},
+        {"handle": "@unusual_whales", "tone": "bull", "note": "large call sweep $140 strike 2 weeks out"},
+        {"handle": "@wickedstocks", "tone": "neutral", "note": "watching $136 as key resistance, wants confirmation"}
+      ]
+    }
+  ]
+}
+
+confidence must be: "high", "medium", or "low"
+signal must be one of: "Buy premarket", "Buy at VWAP", "Wait for dip", "Watch only"
+timeframe must be one of: "Day trade", "Swing 1-3d", "Swing 1wk"
+tone in fintwit_sentiment must be: "bull", "bear", or "neutral"
+trending_sectors bias must be: "bull", "bear", or "neutral"
+
+Data to fetch (search for each):
+1. "stock market today sector performance" — find the top and bottom performing sectors
+2. "unusual options activity today stocks" — find stocks with unusual call/put volume
+3. "stock upgrades downgrades today analyst" — fresh analyst calls
+4. Search for recent posts from @unusual_whales @alphatrends @wickedstocks @3Stocksaday @3BestStocks @stocktwits
+5. "best stock setups tomorrow technical analysis" — find technically clean setups
+6. "momentum stocks today high volume breakout" — find stocks breaking out
+7. Search for @fundstrat OR @KeithMcCullough recent market commentary
+
+Return ONLY the JSON. Make the picks actionable and specific with real current tickers.`;
+
+
+// ══════════════════════════════════════════════════════════
+// ── LEARNING ENGINE ────────────────────────────────────────
+// Tracks 4 dimensions: signal type, sector, confidence, timeframe
+// Kicks in after 5 resolved picks. Updates after every resolution.
+// ══════════════════════════════════════════════════════════
+
+function getLearned(){
+  try{ return JSON.parse(localStorage.getItem(K.learned)||'{}'); } catch(e){ return {}; }
+}
+function saveLearned(l){ localStorage.setItem(K.learned, JSON.stringify(l)); }
+
+function computeLearning(){
+  const hist = getHistory().filter(h=>h.status==='correct'||h.status==='wrong');
+  if(hist.length < 5) return null;
+
+  const dims = {
+    signal:    {}, // 'Buy premarket' etc → {c,t}
+    sector:    {}, // 'AI / Semiconductors' etc
+    confidence:{}, // 'high','medium','low'
+    timeframe: {}  // 'Day trade','Swing 1-3d','Swing 1wk'
+  };
+
+  hist.forEach(h=>{
+    ['signal','sector','confidence','timeframe'].forEach(dim=>{
+      const key = h[dim]; if(!key) return;
+      if(!dims[dim][key]) dims[dim][key]={c:0,t:0};
+      dims[dim][key].t++;
+      if(h.status==='correct') dims[dim][key].c++;
+    });
+  });
+
+  // Convert to accuracy %
+  const learned = { signal:{}, sector:{}, confidence:{}, timeframe:{}, totalResolved:hist.length };
+  Object.entries(dims).forEach(([dim,vals])=>{
+    Object.entries(vals).forEach(([key,v])=>{
+      if(v.t >= 3) // need at least 3 data points to trust a dimension
+        learned[dim][key] = { pct: Math.round(v.c/v.t*100), c:v.c, t:v.t };
+    });
+  });
+
+  saveLearned(learned);
+  return learned;
+}
+
+// Build the learning context string to inject into the system prompt
+function buildLearningContext(){
+  const learned = getLearned();
+  if(!learned || !learned.totalResolved || learned.totalResolved < 5) return '';
+
+  const lines = [`\n\n━━ LEARNING FEEDBACK (${learned.totalResolved} resolved picks) ━━`];
+  lines.push('Based on YOUR past performance, adapt picks accordingly:\n');
+
+  // Signal preferences
+  if(Object.keys(learned.signal||{}).length){
+    lines.push('Signal accuracy:');
+    Object.entries(learned.signal).sort((a,b)=>b[1].pct-a[1].pct).forEach(([sig,v])=>{
+      const tag = v.pct>=65?'✓ WORKING WELL':v.pct>=50?'→ MIXED':' ✗ AVOID';
+      lines.push(`  ${tag}: "${sig}" — ${v.pct}% (${v.c}/${v.t})`);
+    });
+    // Find best signal
+    const best = Object.entries(learned.signal).sort((a,b)=>b[1].pct-a[1].pct)[0];
+    if(best && best[1].pct >= 60)
+      lines.push(`  → PREFER "${best[0]}" signal type for today's picks`);
+    const worst = Object.entries(learned.signal).sort((a,b)=>a[1].pct-b[1].pct)[0];
+    if(worst && worst[1].pct < 45 && worst[1].t >= 4)
+      lines.push(`  → AVOID "${worst[0]}" — only ${worst[1].pct}% accurate so far`);
+  }
+
+  // Sector preferences
+  if(Object.keys(learned.sector||{}).length){
+    const goodSectors = Object.entries(learned.sector).filter(([,v])=>v.pct>=60).map(([k,v])=>`${k} (${v.pct}%)`);
+    const badSectors  = Object.entries(learned.sector).filter(([,v])=>v.pct<45&&v.t>=3).map(([k,v])=>`${k} (${v.pct}%)`);
+    if(goodSectors.length) lines.push(`\nBest performing sectors: ${goodSectors.join(', ')} — favor these`);
+    if(badSectors.length)  lines.push(`Underperforming sectors: ${badSectors.join(', ')} — be cautious`);
+  }
+
+  // Confidence calibration
+  if(Object.keys(learned.confidence||{}).length){
+    lines.push('\nConfidence calibration:');
+    Object.entries(learned.confidence).forEach(([conf,v])=>{
+      lines.push(`  "${conf}" confidence → ${v.pct}% accuracy (${v.c}/${v.t})`);
+    });
+    const highConf = learned.confidence['high'];
+    if(highConf && highConf.pct < 55)
+      lines.push('  → "high" confidence calls are not outperforming — tighten criteria');
+    const lowConf = learned.confidence['low'];
+    if(lowConf && lowConf.pct >= 60)
+      lines.push('  → "low" confidence calls are actually performing well — reconsider labeling');
+  }
+
+  // Timeframe preferences
+  if(Object.keys(learned.timeframe||{}).length){
+    const tfEntries = Object.entries(learned.timeframe).sort((a,b)=>b[1].pct-a[1].pct);
+    if(tfEntries.length){
+      const best = tfEntries[0];
+      lines.push(`\nBest timeframe: "${best[0]}" at ${best[1].pct}% — weight picks toward this`);
+    }
+  }
+
+  lines.push('\n━━ END LEARNING FEEDBACK ━━');
+  return lines.join('\n');
+}
+
+// Run learning after every resolution
+function runLearning(){
+  const l = computeLearning();
+  return l;
+}
+
+// ── Fetch ─────────────────────────────────────────────────
+async function fetchAndRender(){
+  const key=getKey(); if(!key){ clearKey(); return; }
+  setLoading(true,'Fetching market conditions gate…');
+  hideError();
+  document.getElementById('stale-bar').style.display='none';
+  const msgs=[
+    'Scoring NQ futures & VIX…',
+    'Checking sector ETF breadth…',
+    'Reading put/call ratio…',
+    'Scanning momentum setups…',
+    'Checking unusual options flow…',
+    'Reading @unusual_whales & @alphatrends…',
+    'Applying gate adjustments…',
+    'Ranking picks by conviction…'
+  ];
+  let mi=0;
+  const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; document.getElementById('loading-msg').textContent=msgs[mi]; },2000);
+  try{
+    // Fetch gate conditions first (parallel would be nice but sequential is safer with rate limits)
+    document.getElementById('loading-msg').textContent = 'Fetching market conditions gate…';
+    const gateData = await fetchGate();
+    const gateCtx = buildGateContext(gateData);
+
+    document.getElementById('loading-msg').textContent = 'Scanning sector momentum…';
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:4000,
+        system:SYSTEM_PROMPT,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:'Generate today\'s stock picks. Search for current data now and return the JSON.' + buildLearningContext() + gateCtx}]
+      })
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      if(resp.status===401) throw new Error('Invalid API key — check console.anthropic.com/settings/keys.');
+      if(resp.status===429) throw new Error('Rate limit — wait 60s and retry.');
+      if(resp.status===404) throw new Error('Model not found (404) — re-download the latest app file.');
+      throw new Error((err?.error?.message||`API error ${resp.status}`) + ` [${resp.status}]`);
+    }
+    const data=await resp.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = robustParseJSON(text);
+    // Apply gate adjustments to picks before storing/rendering
+    const adjusted = applyGateToPicksData(parsed, gateData);
+    localStorage.setItem(K.data,JSON.stringify(adjusted));
+    localStorage.setItem(K.ts,Date.now().toString());
+    render(adjusted);
+  } catch(e){
+    showError(e.message||'Unknown error.');
+    const cached=localStorage.getItem(K.data);
+    if(cached){ try{ render(JSON.parse(cached)); document.getElementById('stale-bar').style.display='flex'; }catch(_){} }
+  } finally { clearInterval(iv); setLoading(false); }
+}
+
+// ── Save picks to history ─────────────────────────────────
+function savePicks(picks, date){
+  const hist = getHistory();
+  picks.forEach(p=>{
+    if(hist.find(h=>h.ticker===p.ticker&&h.date===date)) return;
+    hist.push({ ticker:p.ticker, date, signal:p.signal, timeframe:p.timeframe,
+                sector:p.sector||'', confidence:p.confidence, entry:p.entry, target:p.target,
+                status:'pending', savedAt:Date.now(), actualPct:null });
+  });
+  saveHistory(hist);
+}
+
+// ── Render ────────────────────────────────────────────────
+function render(d){
+  document.getElementById('ts').textContent = d.date+' · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  // Save picks
+  if(d.picks) savePicks(d.picks, d.date);
+
+  // Gate bar
+  renderGateBar(d.gate || getGate());
+
+  // Macro banner
+  const mb = document.getElementById('macro-banner');
+  const mBias = d.macro_bias||'Neutral';
+  const mC = mBias==='Bull'?{bg:'#dcfce7',t:'#15803d'}:mBias==='Bear'?{bg:'#fee2e2',t:'#dc2626'}:{bg:'#e8edf7',t:'#3d4966'};
+  mb.innerHTML=`<div class="macro-banner">
+    <span class="macro-pill" style="background:${mC.bg};color:${mC.t}">${mBias==='Bull'?'↑ Bullish':mBias==='Bear'?'↓ Bearish':'→ Neutral'} macro</span>
+    <span class="macro-label">${d.macro_note||''}</span>
+    <span class="macro-score">score: ${d.macro_score||'—'}/100</span>
+  </div>`;
+  mb.style.display='block';
+
+  // Sector strip
+  const ss = document.getElementById('sector-strip');
+  if(d.trending_sectors?.length){
+    const sHtml = d.trending_sectors.map(s=>{
+      const c=s.bias==='bull'?{bg:'#f0fdf4',border:'#86efac',t:'#15803d'}:s.bias==='bear'?{bg:'#fef2f2',border:'#fca5a5',t:'#dc2626'}:{bg:'#f0f4fb',border:'#bcc5dc',t:'#3d4966'};
+      const arrow=s.bias==='bull'?'↑':s.bias==='bear'?'↓':'→';
+      return `<div class="sector-chip" title="${s.reason||''}" style="background:${c.bg};border-color:${c.border};color:${c.t}">${arrow} ${s.name}</div>`;
+    }).join('');
+    ss.innerHTML=sHtml; ss.style.display='flex';
+  }
+
+  // Picks
+  const pg = document.getElementById('picks-grid');
+  if(d.picks?.length){
+    pg.innerHTML = d.picks.map(p=>renderPick(p)).join('');
+    pg.style.display='flex';
+  }
+
+  renderScorecard();
+  document.getElementById('footer-actions').style.display='flex';
+  document.getElementById('footer').style.display='block';
+}
+
+function signalStyle(sig){
+  if(sig==='Buy premarket') return {bg:'#dcfce7',border:'#86efac',t:'#15803d',accent:'#16a34a'};
+  if(sig==='Buy at VWAP')   return {bg:'#dbeafe',border:'#93c5fd',t:'#1d4ed8',accent:'#2563eb'};
+  if(sig==='Wait for dip')  return {bg:'#fef3c7',border:'#fcd34d',t:'#b45309',accent:'#d97706'};
+  return                           {bg:'#f0f4fb',border:'#bcc5dc',t:'#3d4966',accent:'#6b7280'};
+}
+function confColor(c){ return c==='high'?'#15803d':c==='medium'?'#d97706':'#6b7280'; }
+
+function renderPick(p){
+  const ss = signalStyle(p.signal);
+  const rankColors = ['#1d4ed8','#0e7490','#6d28d9','#b45309','#374151'];
+  const rc = rankColors[(p.rank-1)%rankColors.length];
+  const rankBg = rc+'22';
+  const upside = p.target && p.entry ? (((p.target-p.entry)/p.entry)*100).toFixed(1) : '—';
+  const downside = p.stop && p.entry ? (((p.entry-p.stop)/p.entry)*100).toFixed(1) : '—';
+
+  // FinTwit sentiment icons
+  const toneIcon=(t)=>t==='bull'?'↑':t==='bear'?'↓':'→';
+  const toneC=(t)=>t==='bull'?'#16a34a':t==='bear'?'#dc2626':'#8090b0';
+
+  const sentHtml=(p.fintwit_sentiment||[]).slice(0,3).map(s=>`
+    <div class="sent-item">
+      <span class="sent-tone" style="background:${toneC(s.tone)}"></span>
+      <span><span class="sent-handle">${s.handle}</span> — ${s.note}</span>
+    </div>`).join('');
+
+  const entryHtml=(p.entry_strategy||[]).map(e=>`
+    <div class="entry-item">
+      <span class="entry-dot" style="background:${ss.accent}"></span>
+      <span>${e}</span>
+    </div>`).join('');
+
+  const tfColor = p.timeframe==='Day trade'?{bg:'#ecfeff',t:'#0e7490'}:p.timeframe==='Swing 1-3d'?{bg:'#f5f3ff',t:'#6d28d9'}:{bg:'#fef3c7',t:'#b45309'};
+
+  return `<div class="pick-card">
+    <div class="pick-card-accent" style="background:linear-gradient(90deg,${ss.accent},${ss.accent}66)"></div>
+    <div class="pick-body">
+      <div class="pick-top">
+        <div class="pick-left">
+          <div class="pick-rank" style="background:${rankBg};color:${rc}">#${p.rank}</div>
+          <div>
+            <div class="pick-ticker">${p.ticker}</div>
+            <div class="pick-name">${p.name||''}</div>
+            <span class="pick-sector" style="background:${ss.bg};color:${ss.t}">${p.sector||''}</span>
+          </div>
+        </div>
+        <div class="pick-right">
+          <div class="pick-signal" style="background:${ss.bg};color:${ss.t};border:1px solid ${ss.border}">
+            ${p.signal==='Buy premarket'?svgIcon('sunrise'):p.signal==='Buy at VWAP'?svgIcon('wave'):p.signal==='Wait for dip'?svgIcon('arrow-down-circle'):svgIcon('eye')}
+            ${p.signal}
+          </div>
+          ${p.gateAdj?`<div style="font-size:9px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#b45309;text-align:right">⚙ Gate: ${p.gateAdj}</div>`:''}
+          <span class="pick-timeframe" style="background:${tfColor.bg};color:${tfColor.t};padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;font-family:var(--mono)">${p.timeframe||''}</span>
+          <span class="pick-conf" style="color:${confColor(p.confidence)}">${p.confidence} conviction</span>
+        </div>
+      </div>
+
+      <div class="pick-meta">
+        <div class="pick-stat">
+          <div class="ps-label">Price</div>
+          <div class="ps-val">$${p.price?.toFixed(2)||'—'}</div>
+        </div>
+        <div class="pick-stat">
+          <div class="ps-label">Entry</div>
+          <div class="ps-val" style="color:#1d4ed8">$${p.entry?.toFixed(2)||'—'}</div>
+        </div>
+        <div class="pick-stat">
+          <div class="ps-label">Target</div>
+          <div class="ps-val" style="color:#15803d">$${p.target?.toFixed(2)||'—'} <span style="font-size:9px">(+${upside}%)</span></div>
+        </div>
+        <div class="pick-stat">
+          <div class="ps-label">Stop</div>
+          <div class="ps-val" style="color:#dc2626">$${p.stop?.toFixed(2)||'—'} <span style="font-size:9px">(-${downside}%)</span></div>
+        </div>
+      </div>
+
+      ${p.catalyst?`<div style="background:#eff6ff;border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;font-size:11px;color:#1d4ed8;display:flex;gap:7px;align-items:flex-start"><span style="font-weight:700;flex-shrink:0">⚡ Catalyst:</span><span>${p.catalyst}</span></div>`:''}
+
+      <div class="entry-box" style="border-color:${ss.accent}">
+        <div class="entry-label" style="color:${ss.t}">${svgIcon('map-pin',ss.t)} Entry strategy</div>
+        <div class="entry-items">${entryHtml}</div>
+      </div>
+
+      <div class="pick-bottom">
+        <div class="thesis-box">
+          <div class="box-label">${svgIcon('file-text')} Thesis</div>
+          <div class="thesis-text">${p.thesis||''}</div>
+          ${p.technical?`<div style="font-size:10px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"><span style="font-weight:600">TA:</span> ${p.technical}</div>`:''}
+        </div>
+        <div class="thesis-box">
+          <div class="box-label" style="color:var(--cyan)">${svgIcon('message-circle','#0e7490')} FinTwit signal</div>
+          <div class="sentiment-items">${sentHtml||'<span style="font-size:11px;color:var(--text3)">No recent mentions found</span>'}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Scorecard ─────────────────────────────────────────────
+let scorecardOpen=false;
+function toggleScorecard(){
+  scorecardOpen=!scorecardOpen;
+  document.getElementById('scorecard-panel').style.display=scorecardOpen?'block':'none';
+  document.getElementById('sb-chevron').classList.toggle('open',scorecardOpen);
+}
+
+function renderScorecard(){
+  const hist=getHistory(), banner=document.getElementById('score-banner');
+  if(!hist.length){ banner.style.display='none'; return; }
+  banner.style.display='flex';
+
+  const resolved=hist.filter(h=>h.status!=='pending');
+  const correct=resolved.filter(h=>h.status==='correct').length;
+  const pct=resolved.length>0?Math.round(correct/resolved.length*100):null;
+  let streak=0;
+  for(let i=resolved.length-1;i>=0;i--){ if(resolved[i].status==='correct') streak++; else break; }
+
+  // Signal accuracy
+  const sigAcc={};
+  ['Buy premarket','Buy at VWAP','Wait for dip'].forEach(s=>{ sigAcc[s]={c:0,t:0}; });
+  resolved.forEach(h=>{
+    if(sigAcc[h.signal]){ sigAcc[h.signal].t++; if(h.status==='correct') sigAcc[h.signal].c++; }
+  });
+
+  const pctC=pct===null?'var(--text3)':pct>=65?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+  document.getElementById('sb-overall').innerHTML=`<div class="sb-num" style="color:${pctC}">${pct!==null?pct+'%':'—'}</div><div class="sb-lbl">${correct}/${resolved.length} picks correct</div>`;
+  document.getElementById('sb-streak').innerHTML=`<div class="sb-num" style="color:${streak>2?'var(--green)':'var(--text)'}">${streak}${streak>2?' 🔥':''}</div><div class="sb-lbl">current streak</div>`;
+  const learnedNow = getLearned();
+  const isLearnActive = learnedNow && learnedNow.totalResolved >= 5;
+  document.getElementById('sb-signals').innerHTML=`<div class="sb-num" style="font-size:14px;padding-top:4px;color:${isLearnActive?'#d97706':'var(--text3)'}">${isLearnActive?'Active':'< 5 data'}</div><div class="sb-lbl">self-learning</div>`;
+
+  // History rows
+  const recent=[...hist].reverse().slice(0,15);
+  const histHtml=recent.map(h=>{
+    const sc=signalStyle(h.signal);
+    const res=h.status==='correct'?'<span style="color:#16a34a;font-size:14px">✓</span>':h.status==='wrong'?'<span style="color:#dc2626;font-size:14px">✗</span>':'<span style="color:#9ba3b8">·</span>';
+    const act=h.actualPct!=null?`<span style="color:${h.actualPct>=0?'#15803d':'#dc2626'};font-family:var(--mono)">${h.actualPct>=0?'+':''}${h.actualPct.toFixed(2)}%</span>`:'<span style="color:var(--text3);font-style:italic">pending</span>';
+    return `<div class="hist-row">
+      <span class="hist-date">${h.date}</span>
+      <span class="hist-ticker">${h.ticker}</span>
+      <span class="hist-signal" style="color:${sc.t};font-size:10px">${h.signal}</span>
+      <span class="hist-actual">${act}</span>
+      <span class="hist-result">${res}</span>
+    </div>`;
+  }).join('');
+
+  // Signal breakdown
+  const sigRows=Object.entries(sigAcc).map(([sig,v])=>{
+    const pct2=v.t>0?Math.round(v.c/v.t*100):null;
+    const sc=signalStyle(sig);
+    const barC=pct2===null?'#e2e6f0':pct2>=65?'#16a34a':pct2>=50?'#d97706':'#dc2626';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:11px;color:${sc.t};font-weight:600;width:120px;flex-shrink:0">${sig}</span>
+      <div style="flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;border-radius:2px;background:${barC};width:${pct2||0}%"></div></div>
+      <span style="font-size:11px;font-family:var(--mono);font-weight:600;color:${barC};width:36px;text-align:right">${pct2!==null?pct2+'%':'—'}</span>
+    </div>`;
+  }).join('');
+
+  // Learning insights panel
+  const learned = getLearned();
+  const isLearning = learned && learned.totalResolved >= 5;
+  let learnHtml = '';
+  if(isLearning){
+    const bestSig = Object.entries(learned.signal||{}).sort((a,b)=>b[1].pct-a[1].pct)[0];
+    const bestSec = Object.entries(learned.sector||{}).sort((a,b)=>b[1].pct-a[1].pct)[0];
+    const bestTf  = Object.entries(learned.timeframe||{}).sort((a,b)=>b[1].pct-a[1].pct)[0];
+    const worstSig = Object.entries(learned.signal||{}).filter(([,v])=>v.t>=3).sort((a,b)=>a[1].pct-b[1].pct)[0];
+
+    const insightRows = [];
+    if(bestSig) insightRows.push(`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">Best signal type</span><span style="font-weight:600;color:#15803d;font-family:var(--mono)">${bestSig[0]} · ${bestSig[1].pct}%</span></div>`);
+    if(worstSig && worstSig[1].pct < 45) insightRows.push(`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">Avoid signal type</span><span style="font-weight:600;color:#dc2626;font-family:var(--mono)">${worstSig[0]} · ${worstSig[1].pct}%</span></div>`);
+    if(bestSec) insightRows.push(`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--text2)">Hottest sector</span><span style="font-weight:600;color:#0e7490;font-family:var(--mono)">${bestSec[0]} · ${bestSec[1].pct}%</span></div>`);
+    if(bestTf)  insightRows.push(`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:11px"><span style="color:var(--text2)">Best timeframe</span><span style="font-weight:600;color:#6d28d9;font-family:var(--mono)">${bestTf[0]} · ${bestTf[1].pct}%</span></div>`);
+
+    learnHtml = `<div class="sc-section">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <span style="font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text3)">⚡ Learned preferences</span>
+        <span style="font-size:9px;background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-family:var(--mono);font-weight:600">${learned.totalResolved} picks analyzed</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5">These insights are fed back into each Refresh — the app adapts its picks based on what's been working for you.</div>
+      ${insightRows.join('')}
+    </div>`;
+  } else {
+    const needed = Math.max(0, 5 - resolved.length);
+    learnHtml = `<div class="sc-section"><div style="font-size:11px;color:var(--text3);line-height:1.6">${needed > 0 ? `⚡ Learning activates after ${needed} more resolved pick${needed===1?'':'s'}. The app will start adapting signals, sectors, and timeframes to what works for you.` : 'Learning engine is computing…'}</div></div>`;
+  }
+
+  document.getElementById('scorecard-panel').innerHTML=`
+    ${learnHtml}
+    <div class="sc-section">
+      <div class="sc-title">Signal type accuracy</div>
+      ${sigRows}
+    </div>
+    <div class="sc-section">
+      <div class="sc-title">Sector accuracy</div>
+      ${buildSectorAccRows(resolved)}
+    </div>
+    <div class="sc-section">
+      <div class="sc-title">Pick history</div>
+      <div style="display:flex;gap:10px;font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);letter-spacing:.05em;text-transform:uppercase">
+        <span style="width:60px">Date</span><span style="width:56px">Ticker</span><span style="width:90px">Signal</span><span style="width:64px">Actual</span><span>Result</span>
+      </div>
+      ${histHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">No picks tracked yet</div>'}
+    </div>`;
+}
+
+function buildSectorAccRows(resolved){
+  const secAcc={};
+  resolved.forEach(h=>{
+    if(!h.sector) return;
+    if(!secAcc[h.sector]) secAcc[h.sector]={c:0,t:0};
+    secAcc[h.sector].t++;
+    if(h.status==='correct') secAcc[h.sector].c++;
+  });
+  const entries = Object.entries(secAcc).sort((a,b)=>b[1].t-a[1].t);
+  if(!entries.length) return '<div style="font-size:12px;color:var(--text3);padding:4px 0">Not enough sector data yet</div>';
+  return entries.map(([sec,v])=>{
+    const pct2=Math.round(v.c/v.t*100);
+    const barC=pct2>=65?'#16a34a':pct2>=50?'#d97706':'#dc2626';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:11px;color:var(--text2);flex:1">${sec}</span>
+      <div style="width:80px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;border-radius:2px;background:${barC};width:${pct2}%"></div></div>
+      <span style="font-size:11px;font-family:var(--mono);font-weight:600;color:${barC};width:36px;text-align:right">${pct2}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Inline SVG icons ──────────────────────────────────────
+function svgIcon(name, color){
+  const c=color||'currentColor';
+  const icons={
+    'sunrise':`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="16 5 12 9 8 5"/></svg>`,
+    'wave':`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>`,
+    'arrow-down-circle':`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>`,
+    'eye':`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    'map-pin':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+    'file-text':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+    'message-circle':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  };
+  return icons[name]||'';
+}
+
+// ── UI helpers ────────────────────────────────────────────
+function setLoading(on,msg){
+  document.getElementById('loading').style.display=on?'flex':'none';
+  if(msg) document.getElementById('loading-msg').textContent=msg;
+  const btn=document.getElementById('refresh-btn');
+  if(on){btn.classList.add('spinning');btn.disabled=true;}
+  else{btn.classList.remove('spinning');btn.disabled=false;}
+}
+function showError(msg){ const b=document.getElementById('error-bar'); document.getElementById('error-msg').textContent=msg; b.style.display='flex'; }
+function hideError(){ document.getElementById('error-bar').style.display='none'; }
+</script>
+</body>
+</html>

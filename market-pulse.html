@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Market Pulse — next-day NASDAQ open forecast">
+<title>Market Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4fb;
+  --bg2:#ffffff;
+  --bg3:#e8edf7;
+  --border:#dde3f0;
+  --border2:#bcc5dc;
+  --text:#0d1117;
+  --text2:#3d4966;
+  --text3:#8090b0;
+  --green:#15803d;   --green-bg:#f0fdf4;   --green-mid:#dcfce7; --green-str:#14532d;
+  --red:#dc2626;     --red-bg:#fef2f2;     --red-mid:#fee2e2;
+  --amber:#b45309;   --amber-bg:#fffbeb;   --amber-mid:#fef3c7;
+  --blue:#1d4ed8;    --blue-bg:#eff6ff;    --blue-mid:#dbeafe;
+  --purple:#6d28d9;  --purple-bg:#f5f3ff;
+  --radius:16px; --radius-sm:10px; --radius-xs:6px;
+  --shadow:0 1px 4px rgba(13,17,23,0.07),0 1px 2px rgba(13,17,23,0.04);
+  --shadow-md:0 4px 20px rgba(13,17,23,0.09),0 2px 6px rgba(13,17,23,0.05);
+  --shadow-lg:0 8px 40px rgba(13,17,23,0.1),0 4px 10px rgba(13,17,23,0.05);
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.container{max-width:700px;margin:0 auto;padding:0 18px 64px}
+
+/* ── Topbar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0 20px;border-bottom:1px solid var(--border);margin-bottom:22px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8 0%,#6d28d9 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(29,78,216,0.3)}
+.logo-wrap svg{color:#fff}
+.topbar-text{display:flex;flex-direction:column;gap:1px}
+.appname{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.tagline{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.02em}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.ts{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;font-family:var(--font);padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;box-shadow:var(--shadow)}
+.btn:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.btn:active{transform:scale(0.97)}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;box-shadow:0 2px 10px rgba(29,78,216,0.3)}
+.btn-primary:hover{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--text3)}
+.btn-ghost:hover{background:var(--bg3);border-color:var(--border);color:var(--text2)}
+.btn-icon{padding:7px 9px}
+
+/* ── Key screen ── */
+#key-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:22px;text-align:center}
+.key-icon{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#1d4ed8,#6d28d9);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(29,78,216,0.3)}
+.key-title{font-size:22px;font-weight:700;letter-spacing:-.03em}
+.key-sub{font-size:13px;color:var(--text2);max-width:340px;line-height:1.7}
+.key-input-row{display:flex;gap:8px;width:100%;max-width:440px}
+.key-input{flex:1;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-shadow:var(--shadow)}
+.key-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.key-note{font-size:11px;color:var(--text3);max-width:340px;line-height:1.7}
+.key-note a{color:var(--blue);text-decoration:none}
+.key-note a:hover{text-decoration:underline}
+
+/* ── Hero ── */
+.hero{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:26px 28px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.hero-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0}
+.hero-eyebrow{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-family:var(--mono);margin-bottom:16px}
+.hero-main{display:flex;align-items:flex-end;gap:20px;margin-bottom:14px}
+.verdict{font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.conf-block{display:flex;flex-direction:column;gap:3px;padding-bottom:5px}
+.conf-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.conf-val{font-size:13px;font-weight:600;font-family:var(--mono)}
+.hero-rationale{font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border);padding-top:13px}
+
+/* ── Scorecard banner ── */
+.score-banner{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow-md)}
+.score-banner:hover{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.06)}
+.sb-stat{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.sb-num{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:-.03em;line-height:1}
+.sb-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+.sb-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-divider{width:1px;height:40px;background:var(--border);flex-shrink:0}
+.sb-chevron{color:var(--text3);transition:transform .2s;flex-shrink:0}
+.sb-chevron.open{transform:rotate(180deg)}
+
+/* ── Scorecard panel ── */
+.scorecard-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow-md)}
+.sc-section{padding:18px 20px;border-bottom:1px solid var(--border)}
+.sc-section:last-child{border-bottom:none}
+.sc-title{display:flex;align-items:center;gap:6px;font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.sc-ind-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.sc-ind-row:last-child{border-bottom:none}
+.sc-ind-name{font-size:12px;color:var(--text2);width:130px;flex-shrink:0}
+.sc-bar-wrap{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.sc-pct{font-size:11px;font-family:var(--mono);font-weight:600;width:40px;text-align:right;flex-shrink:0}
+.sc-wt{font-size:10px;font-family:var(--mono);color:var(--text3);width:32px;text-align:right;flex-shrink:0}
+.sc-wt-adj{font-size:9px;font-family:var(--mono);color:var(--amber);margin-left:2px}
+
+/* ── History rows ── */
+.hist-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.hist-row:last-child{border-bottom:none}
+.hist-date{color:var(--text3);font-family:var(--mono);width:76px;flex-shrink:0}
+.hist-pred{font-weight:600;width:82px;flex-shrink:0}
+.hist-actual{width:70px;flex-shrink:0;font-family:var(--mono)}
+.hist-result{width:22px;text-align:center;flex-shrink:0;font-size:14px}
+.hist-pending{color:var(--text3);font-style:italic}
+
+/* ── Futures strip ── */
+.fut-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.fcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:17px 20px;box-shadow:var(--shadow-md)}
+.fcard-top{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.ficon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fname{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;font-weight:500}
+.fval{font-size:22px;font-weight:700;letter-spacing:-.03em;font-family:var(--mono);line-height:1;margin-bottom:4px}
+.fmeta{font-size:10px;color:var(--text3);margin-bottom:8px}
+.ftag{display:inline-block;font-size:9px;font-weight:600;font-family:var(--mono);padding:3px 8px;border-radius:20px;letter-spacing:.03em}
+
+/* ── Mid 2-col ── */
+.mid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-md)}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.card-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.01em}
+.score-num{font-size:56px;font-weight:700;letter-spacing:-.05em;line-height:1;margin-bottom:8px;font-family:var(--mono)}
+.tier-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:16px}
+.score-track{height:5px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-bottom:7px}
+.score-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.track-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:var(--mono)}
+.sigs{display:flex;flex-direction:column;gap:10px}
+.sigrow{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.sigleft{display:flex;align-items:center;gap:8px;color:var(--text2)}
+.sig-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sigscore{font-weight:700;font-family:var(--mono);font-size:13px}
+
+/* ── Indicator grid ── */
+.igrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.icard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow-md)}
+.icard-top{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.iicon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.iname{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.ival{font-size:19px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em;line-height:1;margin-bottom:3px}
+.isub{font-size:9px;color:var(--text3);margin-bottom:8px;min-height:12px;line-height:1.4}
+.ichip{font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-block;font-family:var(--mono)}
+.imini{height:3px;border-radius:2px;background:var(--bg3);overflow:hidden;margin-top:8px}
+.iminifill{height:100%;border-radius:2px;transition:width .4s ease}
+.iwt{font-size:9px;color:var(--text3);margin-top:5px;font-family:var(--mono)}
+
+/* ── Catalysts ── */
+.ncard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;box-shadow:var(--shadow-md)}
+.nhdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:14px}
+.nicon{width:28px;height:28px;border-radius:7px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center}
+.nitems{display:flex;flex-direction:column;gap:10px}
+.ni{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2);line-height:1.6}
+.ntag{font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;font-family:var(--mono);letter-spacing:.03em}
+
+/* ── Methodology ── */
+.meth{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:12px;box-shadow:var(--shadow-md)}
+.meth-header{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:12px}
+.mrow{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border)}
+.mrow:last-child{border-bottom:none}
+.mrow-name{color:var(--text);font-weight:500}
+.mwt{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--blue-bg);color:var(--blue);font-family:var(--mono)}
+.mwt-learned{background:var(--amber-bg);color:var(--amber)}
+
+/* ── Notify bars ── */
+.notify-bar{border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:8px;font-weight:500}
+.notify-bar svg{width:14px;height:14px;flex-shrink:0}
+.stale-bar{background:var(--amber-bg);border:1px solid #fde68a;color:var(--amber)}
+.error-bar{background:var(--red-bg);border:1px solid #fecaca;color:var(--red)}
+.resolved-bar{background:var(--green-bg);border:1px solid #bbf7d0;color:var(--green-str)}
+
+/* ── Footer ── */
+.footer-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.footer{font-size:11px;color:var(--text3);line-height:1.7;padding-top:4px}
+.footer a{color:var(--text3)}
+
+/* ── Loading overlay ── */
+.loading-overlay{position:fixed;inset:0;background:rgba(240,244,251,0.92);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:16px;backdrop-filter:blur(6px)}
+.loading-spinner{width:32px;height:32px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+.loading-msg{font-size:13px;color:var(--text2);font-family:var(--mono)}
+
+/* ── Responsive ── */
+@media(max-width:520px){
+  .fut-strip{grid-template-columns:1fr 1fr}
+  .fut-strip .fcard:last-child{grid-column:1/-1}
+  .igrid{grid-template-columns:repeat(2,1fr)}
+  .mid2{grid-template-columns:1fr}
+  .verdict{font-size:34px}
+  .score-num{font-size:46px}
+  .sc-ind-name{width:100px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Key screen ── -->
+<div id="key-screen" style="display:none">
+<div class="container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:22px;text-align:center">
+  <div class="key-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+  </div>
+  <div>
+    <div class="key-title">Market Pulse</div>
+    <div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:4px">tomorrow's open · self-learning forecast</div>
+  </div>
+  <div class="key-sub">Paste your Anthropic API key to connect. Stored only in your browser — never sent anywhere except directly to Anthropic.</div>
+  <div class="key-input-row">
+    <input class="key-input" id="key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    <button class="btn btn-primary" onclick="saveKey()">Connect</button>
+  </div>
+  <div class="key-note">Get a free key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com → Settings → API Keys</a><br>~$0.02 per refresh · under $1/month for daily use</div>
+</div>
+</div>
+
+<!-- ── Main app ── -->
+<div id="app" style="display:none">
+<div class="container">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      </div>
+      <div class="topbar-text">
+        <span class="appname">Market Pulse</span>
+        <span class="tagline">tomorrow's open · self-learning</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="ts" id="ts">—</span>
+      <button class="btn" id="refresh-btn" onclick="fetchAndRender()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-ghost btn-icon" onclick="clearKey()" title="Change API key">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="resolved-bar" class="notify-bar resolved-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="resolved-msg"></span>
+  </div>
+  <div id="stale-bar" class="notify-bar stale-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Data may be stale — hit Refresh for a live read
+  </div>
+  <div id="error-bar" class="notify-bar error-bar" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="error-msg"></span>
+  </div>
+
+  <div id="hero" class="hero" style="display:none"></div>
+
+  <div id="score-banner" style="display:none" class="score-banner" onclick="toggleScorecard()">
+    <div class="sb-stat" id="sb-overall"></div>
+    <div class="sb-divider"></div>
+    <div class="sb-stat" id="sb-streak"></div>
+    <div class="sb-divider"></div>
+    <div class="sb-stat" id="sb-learning"></div>
+    <svg class="sb-chevron" id="sb-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+  <div id="scorecard-panel" class="scorecard-panel" style="display:none"></div>
+
+  <div id="fut-strip" class="fut-strip" style="display:none"></div>
+  <div id="mid2" class="mid2" style="display:none"></div>
+  <div id="igrid" class="igrid" style="display:none"></div>
+  <div id="ncard" class="ncard" style="display:none"></div>
+
+  <div class="footer-actions" id="footer-actions" style="display:none">
+    <button class="btn" onclick="fetchAndRender()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Refresh data
+    </button>
+    <button class="btn btn-ghost" onclick="resetLearning()" style="font-size:11px">Reset learning</button>
+  </div>
+
+  <div class="meth" id="meth" style="display:none">
+    <div class="meth-header">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" color="var(--text3)"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+      Methodology — weighted composite score (0–100)
+    </div>
+    <div id="meth-rows"></div>
+  </div>
+
+  <div class="footer" id="footer" style="display:none">
+    Not financial advice. Futures are the primary open signal; macro score is context. Weights auto-adjust after 5+ resolved predictions. API key stored in your browser only. <span style="cursor:pointer;text-decoration:underline" onclick="clearKey()">Change key</span>
+  </div>
+</div>
+</div>
+
+<!-- ── Loading overlay ── -->
+<div id="loading" class="loading-overlay" style="display:none">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loading-msg">Fetching live data…</div>
+</div>
+
+<script>
+// ── Storage keys ──────────────────────────────────────────
+const K = {
+  key:'mp_api_key', data:'mp_last_data', ts:'mp_last_ts',
+  preds:'mp_predictions', weights:'mp_weights'
+};
+const STALE_MS = 4*60*60*1000;
+
+// ── Robust JSON parser ─────────────────────────────────────
+function robustParseJSON(raw){
+  if(!raw) throw new Error('Empty response');
+  let t=raw.replace(/```json|```/gi,'').trim();
+  const s=t.indexOf('{'),e=t.lastIndexOf('}');
+  if(s<0||e<s) throw new Error('No JSON object found in response');
+  t=t.slice(s,e+1);
+  t=t.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
+  t=t.replace(/,(\s*[}\]])/g,'$1');
+  try{ return JSON.parse(t); }catch(e1){
+    try{
+      const f=t.replace(/"((?:[^"\\]|\\.)*)"/g,(_,i)=>'"'+i.replace(/\n/g,'\\n').replace(/\r/g,'\\r')+'"');
+      return JSON.parse(f);
+    }catch(e2){
+      try{
+        let u=t.replace(/,\s*$/,'');
+        let inS=false,esc=false; const stk=[];
+        for(let i=0;i<u.length;i++){
+          const ch=u[i];
+          if(esc){esc=false;continue;} if(ch==='\\'){esc=true;continue;}
+          if(ch==='"'){inS=!inS;continue;} if(inS) continue;
+          if(ch==='{'||ch==='[') stk.push(ch);
+          if(ch==='}'||ch===']') stk.pop();
+        }
+        while(stk.length){ const l=stk.pop(); u+=l==='{'?'}':']'; }
+        return JSON.parse(u);
+      }catch(e3){ throw new Error('JSON parse failed: '+e1.message); }
+    }
+  }
+}
+
+
+// ── Indicator config ──────────────────────────────────────
+const BASE_INDS = [
+  {id:'fg',     name:'Fear & Greed',    wt:25, desc:'CNN 7-signal composite',    icon:'activity'},
+  {id:'mom',    name:'NASDAQ momentum', wt:22, desc:'QQQ vs 50d MA + day return', icon:'trending-up'},
+  {id:'credit', name:'Credit spread',   wt:15, desc:'HY bond OAS vs avg',        icon:'credit-card'},
+  {id:'vix',    name:'VIX',             wt:13, desc:'CBOE fear gauge + trend',   icon:'zap'},
+  {id:'aaii',   name:'AAII sentiment',  wt:10, desc:'Contrarian bull-bear',      icon:'users'},
+  {id:'rsi',    name:'S&P RSI-14',      wt:8,  desc:'Overbought / oversold',     icon:'bar-chart-2'},
+  {id:'yield',  name:'Yield spread',    wt:7,  desc:'10Y minus 2Y Treasury',     icon:'landmark'}
+];
+
+// SVG icons (Lucide subset, inline)
+const ICONS = {
+  'activity': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  'trending-up': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  'trending-down': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
+  'credit-card': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+  'zap': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  'users': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  'bar-chart-2': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  'landmark': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>',
+  'gauge': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l4-8"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>',
+  'list': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  'newspaper': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>',
+  'target': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  'cpu': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  'flame': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
+};
+
+function icon(name, color){ return `<span style="color:${color||'currentColor'}">${ICONS[name]||''}</span>`; }
+
+function getInds(){
+  const w = getWeights();
+  return BASE_INDS.map(i=>({...i, wt: w[i.id]??i.wt, baseWt:i.wt}));
+}
+
+// ── Score color helpers ───────────────────────────────────
+function scoreColor(s){
+  if(s>=65) return {text:'#15803d', bg:'#f0fdf4', border:'#bbf7d0'};
+  if(s>=52) return {text:'#16a34a', bg:'#dcfce7', border:'#86efac'};
+  if(s>=40) return {text:'#d97706', bg:'#fffbeb', border:'#fde68a'};
+  if(s>=28) return {text:'#b45309', bg:'#fef3c7', border:'#fcd34d'};
+  return           {text:'#dc2626', bg:'#fef2f2', border:'#fecaca'};
+}
+function indIconBg(s){
+  if(s>=65) return {bg:'#dcfce7', color:'#15803d'};
+  if(s>=52) return {bg:'#dcfce7', color:'#16a34a'};
+  if(s>=40) return {bg:'#fef3c7', color:'#d97706'};
+  if(s>=28) return {bg:'#fef3c7', color:'#b45309'};
+  return           {bg:'#fee2e2', color:'#dc2626'};
+}
+
+// ── Storage helpers ───────────────────────────────────────
+function getWeights(){ try{ return JSON.parse(localStorage.getItem(K.weights)||'{}'); }catch(e){return{};} }
+function saveWeights(w){ localStorage.setItem(K.weights,JSON.stringify(w)); }
+function getPreds(){ try{ return JSON.parse(localStorage.getItem(K.preds)||'[]'); }catch(e){return[];} }
+function savePreds(p){ localStorage.setItem(K.preds,JSON.stringify(p)); }
+function getKey(){ return localStorage.getItem(K.key)||''; }
+
+// ── Key management ────────────────────────────────────────
+function saveKey(){
+  const v=document.getElementById('key-input').value.trim();
+  if(!v.startsWith('sk-ant-')){ alert("Doesn't look like a valid Anthropic API key (should start with sk-ant-)"); return; }
+  localStorage.setItem(K.key,v);
+  showApp(); fetchAndRender();
+}
+function clearKey(){
+  localStorage.removeItem(K.key);
+  document.getElementById('key-input').value='';
+  document.getElementById('app').style.display='none';
+  document.getElementById('key-screen').style.display='flex';
+}
+function showApp(){
+  document.getElementById('key-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+function resetLearning(){
+  if(!confirm('Reset all learned weights and prediction history?')) return;
+  localStorage.removeItem(K.weights); localStorage.removeItem(K.preds);
+  renderScorecard(); renderMethodology(getInds());
+  alert('Learning data cleared. Weights reset to defaults.');
+}
+document.getElementById('key-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveKey(); });
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('load', async ()=>{
+  const key=getKey();
+  if(!key){ document.getElementById('key-screen').style.display='flex'; return; }
+  showApp();
+  await tryAutoResolve();
+  const raw=localStorage.getItem(K.data), ts=localStorage.getItem(K.ts);
+  if(raw&&ts){
+    try{
+      const d=JSON.parse(raw); render(d);
+      if(Date.now()-parseInt(ts,10)>STALE_MS) document.getElementById('stale-bar').style.display='flex';
+    } catch(e){ fetchAndRender(); }
+  } else { fetchAndRender(); }
+});
+
+// ── Auto-resolve ──────────────────────────────────────────
+async function tryAutoResolve(){
+  const preds=getPreds(), pending=preds.filter(p=>p.status==='pending');
+  if(!pending.length) return;
+  const now=new Date(), utcMin=now.getUTCHours()*60+now.getUTCMinutes();
+  const etMin=((utcMin-300+1440)%1440);
+  if(etMin<585) return;
+  for(const pred of pending){
+    const predDay=new Date(pred.savedAt).toDateString(), today=now.toDateString();
+    if(predDay===today) continue;
+    try{
+      const actual=await fetchActualOpen(pred.date);
+      if(actual!==null){
+        pred.actualPct=actual;
+        const correct=isCorrect(pred.verdict,actual);
+        pred.status=correct?'correct':'wrong';
+        pred.resolvedAt=Date.now();
+        updateIndicatorAccuracy(pred,correct);
+      }
+    } catch(e){}
+  }
+  savePreds(preds); learnWeights();
+  const just=preds.filter(p=>p.resolvedAt&&Date.now()-p.resolvedAt<60000);
+  if(just.length){
+    const r=just[0];
+    const msg=r.status==='correct'
+      ?`Yesterday's "${r.verdict}" call was ✓ correct! (QQQ opened ${r.actualPct>=0?'+':''}${r.actualPct?.toFixed(2)}%)`
+      :`Yesterday's "${r.verdict}" call was ✗ wrong (QQQ opened ${r.actualPct>=0?'+':''}${r.actualPct?.toFixed(2)}%) — updating weights.`;
+    document.getElementById('resolved-msg').textContent=msg;
+    document.getElementById('resolved-bar').style.display='flex';
+    setTimeout(()=>document.getElementById('resolved-bar').style.display='none',9000);
+  }
+}
+
+function isCorrect(verdict,pct){
+  if(verdict==='Gap up')    return pct>0.8;
+  if(verdict==='Lean up')   return pct>0.1;
+  if(verdict==='Flat open') return Math.abs(pct)<=0.4;
+  if(verdict==='Lean down') return pct<-0.1;
+  if(verdict==='Gap down')  return pct<-0.8;
+  return false;
+}
+
+async function fetchActualOpen(){
+  const key=getKey(); if(!key) return null;
+  const prompt=`Search for QQQ opening price and yesterday's close. Return ONLY JSON: {"open_pct_change": -0.45}. If unknown return {"open_pct_change": null}. No prose.`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    try{ return robustParseJSON(text).open_pct_change??null; }catch(pe){ return null; }
+  } catch(e){ return null; }
+}
+
+function updateIndicatorAccuracy(pred,correct){
+  if(!pred.scores) return;
+  pred.indResults=pred.indResults||{};
+  Object.entries(pred.scores).forEach(([id,score])=>{
+    const indBullish=score>=50, actualBullish=(pred.actualPct||0)>=0;
+    pred.indResults[id]=indBullish===actualBullish;
+  });
+}
+
+// ── Learning engine ───────────────────────────────────────
+function learnWeights(){
+  const preds=getPreds().filter(p=>p.status==='correct'||p.status==='wrong');
+  if(preds.length<5) return;
+  const hits={},total={};
+  BASE_INDS.forEach(i=>{ hits[i.id]=0; total[i.id]=0; });
+  preds.forEach(pred=>{
+    if(!pred.scores) return;
+    Object.entries(pred.scores).forEach(([id,score])=>{
+      total[id]=(total[id]||0)+1;
+      const indBullish=score>=50, actualBullish=(pred.actualPct||0)>=0;
+      if(indBullish===actualBullish) hits[id]=(hits[id]||0)+1;
+    });
+  });
+  const accuracy={};
+  BASE_INDS.forEach(i=>{ accuracy[i.id]=total[i.id]>0?hits[i.id]/total[i.id]:0.5; });
+  const blend=Math.min(1,(preds.length-5)/20);
+  const rawW={};
+  let totAcc=0; BASE_INDS.forEach(i=>totAcc+=accuracy[i.id]);
+  BASE_INDS.forEach(i=>{ const lw=(accuracy[i.id]/totAcc)*100; rawW[i.id]=Math.round(i.wt*(1-blend*0.7)+lw*blend*0.7); });
+  const sum=Object.values(rawW).reduce((a,b)=>a+b,0);
+  const learned={}; BASE_INDS.forEach(i=>{ learned[i.id]=Math.round(rawW[i.id]/sum*100); });
+  const diff=100-Object.values(learned).reduce((a,b)=>a+b,0);
+  learned[BASE_INDS[0].id]+=diff;
+  saveWeights(learned);
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function getStats(){
+  const preds=getPreds(), resolved=preds.filter(p=>p.status==='correct'||p.status==='wrong');
+  const correct=resolved.filter(p=>p.status==='correct').length, total=resolved.length;
+  const pct=total>0?Math.round(correct/total*100):null;
+  let streak=0;
+  for(let i=resolved.length-1;i>=0;i--){ if(resolved[i].status==='correct') streak++; else break; }
+  const indHits={},indTotal={};
+  BASE_INDS.forEach(i=>{indHits[i.id]=0;indTotal[i.id]=0;});
+  resolved.forEach(pred=>{
+    if(!pred.scores) return;
+    Object.entries(pred.scores).forEach(([id,score])=>{
+      indTotal[id]=(indTotal[id]||0)+1;
+      const ib=score>=50, ab=(pred.actualPct||0)>=0;
+      if(ib===ab) indHits[id]=(indHits[id]||0)+1;
+    });
+  });
+  const indAcc={};
+  BASE_INDS.forEach(i=>{ indAcc[i.id]=indTotal[i.id]>0?Math.round(indHits[i.id]/indTotal[i.id]*100):null; });
+  return {correct,total,pct,streak,indAcc};
+}
+
+// ── Scorecard ─────────────────────────────────────────────
+let scorecardOpen=false;
+function toggleScorecard(){
+  scorecardOpen=!scorecardOpen;
+  document.getElementById('scorecard-panel').style.display=scorecardOpen?'block':'none';
+  document.getElementById('sb-chevron').classList.toggle('open',scorecardOpen);
+}
+
+function renderScorecard(){
+  const preds=getPreds(), stats=getStats(), banner=document.getElementById('score-banner');
+  if(!preds.length){ banner.style.display='none'; document.getElementById('scorecard-panel').style.display='none'; return; }
+  banner.style.display='flex';
+  const pctC=stats.pct===null?'var(--text2)':stats.pct>=65?'var(--green)':stats.pct>=50?'var(--amber)':'var(--red)';
+  const isLearning=Object.keys(getWeights()).length>0;
+  document.getElementById('sb-overall').innerHTML=`
+    <div class="sb-num" style="color:${pctC}">${stats.pct!==null?stats.pct+'%':'—'}</div>
+    <div class="sb-lbl">${stats.correct}/${stats.total} correct</div>`;
+  document.getElementById('sb-streak').innerHTML=`
+    <div class="sb-num" style="color:${stats.streak>2?'var(--green)':'var(--text)'}">${stats.streak}${stats.streak>2?' 🔥':''}</div>
+    <div class="sb-lbl">current streak</div>`;
+  document.getElementById('sb-learning').innerHTML=`
+    <div class="sb-num" style="color:${isLearning?'var(--amber)':'var(--text3)'};font-size:14px;padding-top:4px">${isLearning?'Active':'< 5 data'}</div>
+    <div class="sb-lbl">weight learning</div>`;
+
+  const indRows=BASE_INDS.map(ind=>{
+    const acc=stats.indAcc[ind.id], learned=getWeights()[ind.id];
+    const pct2=acc!==null?acc:0;
+    const barC=acc===null?'#e4e7ef':pct2>=65?'#16a34a':pct2>=50?'#d97706':'#dc2626';
+    const wt2=learned!==undefined?`<span class="sc-wt-adj">→${learned}%</span>`:'';
+    return `<div class="sc-ind-row">
+      <span class="sc-ind-name">${ind.name}</span>
+      <div class="sc-bar-wrap"><div class="sc-bar-fill" style="width:${pct2}%;background:${barC}"></div></div>
+      <span class="sc-pct" style="color:${barC}">${acc!==null?acc+'%':'—'}</span>
+      <span class="sc-wt">${ind.wt}%${wt2}</span>
+    </div>`;
+  }).join('');
+
+  const recent=[...preds].reverse().slice(0,12);
+  const histRows=recent.map(p=>{
+    const icon2=p.status==='correct'?'<span style="color:#16a34a;font-size:14px">✓</span>':p.status==='wrong'?'<span style="color:#dc2626;font-size:14px">✗</span>':'<span style="color:#9ba3b8">·</span>';
+    const vC=p.verdict.includes('up')||p.verdict.includes('Up')?'#15803d':p.verdict.includes('down')||p.verdict.includes('Down')?'#dc2626':'#5a6072';
+    const actual2=p.actualPct!=null?`<span style="color:${p.actualPct>=0?'#15803d':'#dc2626'};font-family:var(--mono)">${p.actualPct>=0?'+':''}${p.actualPct?.toFixed(2)}%</span>`:'<span class="hist-pending">pending</span>';
+    return `<div class="hist-row"><span class="hist-date">${p.date}</span><span class="hist-pred" style="color:${vC}">${p.verdict}</span><span class="hist-actual">${actual2}</span><span class="hist-result">${icon2}</span></div>`;
+  }).join('');
+
+  const resolvedCount=preds.filter(p=>p.status!=='pending').length;
+  const learnNote=resolvedCount>=5
+    ?`<div style="font-size:11px;color:var(--amber);display:flex;align-items:center;gap:5px;padding-top:10px;font-weight:500">${ICONS['zap'].replace('13','12').replace('13','12')} Weights auto-adjusted based on ${resolvedCount} resolved predictions</div>`
+    :`<div style="font-size:11px;color:var(--text3);padding-top:10px">${Math.max(0,5-resolvedCount)} more predictions needed before weight learning activates</div>`;
+
+  document.getElementById('scorecard-panel').innerHTML=`
+    <div class="sc-section">
+      <div class="sc-title">${ICONS['target']} Indicator accuracy vs actuals</div>
+      ${indRows}${learnNote}
+    </div>
+    <div class="sc-section">
+      <div class="sc-title">${ICONS['list']} Recent predictions</div>
+      <div style="display:flex;gap:10px;font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);letter-spacing:.05em;text-transform:uppercase">
+        <span style="width:76px">Date</span><span style="width:82px">Prediction</span><span style="width:70px">Actual</span><span>Result</span>
+      </div>
+      ${histRows||'<div style="font-size:12px;color:var(--text3);padding:8px 0">No predictions yet — check back tomorrow</div>'}
+    </div>`;
+}
+
+// ── System prompt ─────────────────────────────────────────
+const SYSTEM_PROMPT=`You are a financial data engine for a next-day market forecast tool.
+Return ONLY a valid JSON object — no prose, no markdown, no fences.
+
+Required JSON structure:
+{
+  "date": "<short date like 'Jun 9'>",
+  "fg": <Fear & Greed score 0-100>,
+  "fg_prev": <1 week ago score>,
+  "qqq_close": <QQQ latest price>,
+  "qqq_prev_close": <QQQ prior day close>,
+  "qqq_ma50": <QQQ approx 50-day MA>,
+  "spy_close": <SPY latest price>,
+  "spy_rsi": <SPY 14-day RSI 0-100>,
+  "vix_close": <VIX current level>,
+  "vix_prev": <VIX 1 week ago>,
+  "y10": <10Y Treasury yield %>,
+  "y2": <2Y Treasury yield %>,
+  "hy_spread": <HY credit spread % e.g. 2.75>,
+  "aaii_bull": <AAII bullish %>,
+  "aaii_bear": <AAII bearish %>,
+  "nq_fut": <NQ futures price integer>,
+  "nq_fut_chg": <NQ futures % change vs prior close>,
+  "es_fut_chg": <ES futures % change>,
+  "news": [
+    {"tag":"Futures","tone":"bear","text":"..."},
+    {"tag":"Fed","tone":"neutral","text":"..."},
+    {"tag":"Tech","tone":"bull","text":"..."},
+    {"tag":"Macro","tone":"bear","text":"..."},
+    {"tag":"Credit","tone":"bull","text":"..."}
+  ]
+}
+tone must be: "bull", "bear", or "neutral". Return ONLY the JSON.`;
+
+// ── Fetch & render ────────────────────────────────────────
+async function fetchAndRender(){
+  const key=getKey(); if(!key){ clearKey(); return; }
+  setLoading(true,'Searching for live market data…');
+  hideError();
+  document.getElementById('stale-bar').style.display='none';
+  const msgs=['Fetching futures & indices…','Pulling VIX and yield data…','Reading sentiment signals…','Computing tomorrow\'s forecast…'];
+  let mi=0;
+  const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; document.getElementById('loading-msg').textContent=msgs[mi]; },2200);
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:SYSTEM_PROMPT,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:'Fetch all required market data now and return the JSON.'}]})});
+    if(!resp.ok){ const err=await resp.json().catch(()=>({})); if(resp.status===401) throw new Error('Invalid API key — check and re-enter.'); if(resp.status===429) throw new Error('Rate limit — wait a minute and retry.'); throw new Error(err?.error?.message||`API error ${resp.status}`); }
+    const data=await resp.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed=robustParseJSON(text);
+    localStorage.setItem(K.data,JSON.stringify(parsed)); localStorage.setItem(K.ts,Date.now().toString());
+    render(parsed);
+  } catch(e){
+    showError(e.message||'Unknown error.');
+    const cached=localStorage.getItem(K.data);
+    if(cached){ try{ render(JSON.parse(cached)); document.getElementById('stale-bar').style.display='flex'; } catch(_){} }
+  } finally { clearInterval(iv); setLoading(false); }
+}
+
+// ── Compute ───────────────────────────────────────────────
+function computeScores(d,inds){
+  const fg_s=Math.min(100,Math.max(0,d.fg>=60?60+(d.fg-60)*0.8:d.fg));
+  const pct_ma=(d.qqq_close-d.qqq_ma50)/d.qqq_ma50*100;
+  const pct_day=(d.qqq_close-d.qqq_prev_close)/d.qqq_prev_close*100;
+  const mom_s=Math.min(100,Math.max(0,50+pct_ma*3+pct_day*6));
+  const ratio=d.hy_spread/4.5;
+  const credit_s=ratio<0.4?85:ratio<0.6?75:ratio<0.8?65:ratio<1.0?55:ratio<1.2?45:ratio<1.5?35:20;
+  let vix_s=d.vix_close<15?80:d.vix_close<20?65:d.vix_close<25?45:d.vix_close<30?30:15;
+  const vt=(d.vix_prev-d.vix_close)/d.vix_prev*100;
+  if(vt>5) vix_s=Math.min(100,vix_s+8); else if(vt<-5) vix_s=Math.max(0,vix_s-8);
+  const absp=d.aaii_bull-d.aaii_bear;
+  const aaii_s=absp<-20?80:absp<-10?70:absp<0?60:absp<10?50:absp<20?40:30;
+  const rsi_s=d.spy_rsi<30?75:d.spy_rsi<40?65:d.spy_rsi<=60?50:d.spy_rsi<=70?35:20;
+  const ysp=d.y10-d.y2;
+  const yld_s=ysp>1.5?75:ysp>0.5?60:ysp>0?50:ysp>-0.5?35:20;
+  const raw={fg:Math.round(fg_s),mom:Math.round(mom_s),credit:Math.round(credit_s),vix:Math.round(vix_s),aaii:Math.round(aaii_s),rsi:Math.round(rsi_s),yield:Math.round(yld_s)};
+  const totWt=inds.reduce((a,i)=>a+i.wt,0);
+  const comp=inds.reduce((sum,i)=>sum+(raw[i.id]||50)*(i.wt/totWt),0);
+  return{composite:Math.round(comp),scores:raw,meta:{pct_ma:pct_ma.toFixed(1),pct_day:pct_day.toFixed(2),ysp:ysp.toFixed(2),absp:absp.toFixed(1),vix_dir:vt>3?'falling':vt<-3?'rising':'stable'}};
+}
+
+function openVerdict(nq,macro){
+  if(nq>1.5)  return{v:'Gap up',    c:'#16a34a',bg:'#f0fdf4',conf:macro>=55?'high':'moderate'};
+  if(nq>0.4)  return{v:'Lean up',   c:'#16a34a',bg:'#dcfce7',conf:macro>=50?'moderate':'low'};
+  if(nq>-0.4) return{v:'Flat open', c:'#5a6072',bg:'#f1f3f8',conf:'low'};
+  if(nq>-1.5) return{v:'Lean down', c:'#d97706',bg:'#fffbeb',conf:macro<=45?'moderate':'low'};
+  return             {v:'Gap down',  c:'#dc2626',bg:'#fef2f2',conf:macro<=40?'high':'moderate'};
+}
+
+function savePrediction(d,verdict,scores){
+  const preds=getPreds();
+  if(preds.find(p=>p.date===d.date&&p.status==='pending')) return;
+  preds.push({date:d.date,verdict,nqFutChg:d.nq_fut_chg,macroScore:computeScores(d,getInds()).composite,scores,status:'pending',savedAt:Date.now(),actualPct:null});
+  savePreds(preds);
+}
+
+// ── Render ────────────────────────────────────────────────
+function render(d){
+  const inds=getInds();
+  const{composite,scores,meta}=computeScores(d,inds);
+  const ov=openVerdict(d.nq_fut_chg,composite);
+  savePrediction(d,ov.v,scores);
+
+  document.getElementById('ts').textContent=d.date+' · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  const tier=composite>=65?{l:'Strong Bull',c:'#15803d',bg:'#dcfce7',bar:'#16a34a'}
+            :composite>=55?{l:'Bullish',    c:'#16a34a',bg:'#f0fdf4',bar:'#4ade80'}
+            :composite>=45?{l:'Neutral',    c:'#5a6072',bg:'#f1f3f8',bar:'#9ba3b8'}
+            :composite>=35?{l:'Bearish',    c:'#d97706',bg:'#fef3c7',bar:'#fbbf24'}
+            :              {l:'Strong Bear',c:'#dc2626',bg:'#fee2e2',bar:'#f87171'};
+
+  // Hero
+  const confC=ov.conf==='high'?'#16a34a':ov.conf==='moderate'?'#d97706':'#9ba3b8';
+  const futStr=(d.nq_fut_chg>=0?'+':'')+d.nq_fut_chg.toFixed(2)+'%';
+  const macroWord=composite>=65?'strong bull':composite>=55?'bullish':composite>=45?'neutral':composite>=35?'bearish':'strong bear';
+  const rat=`NQ futures ${futStr} overnight · macro backdrop ${macroWord} (${composite}/100) · ${d.news?.[0]?.text?.split('·')?.[0]?.trim()||''}`;
+  const verdIcon=ov.v.includes('Gap up')||ov.v.includes('Lean up')?ICONS['trending-up']:ov.v.includes('Gap down')||ov.v.includes('Lean down')?ICONS['trending-down']:ICONS['activity'];
+  document.getElementById('hero').innerHTML=`
+    <div class="hero-accent" style="background:linear-gradient(90deg,${ov.c},${ov.c}88)"></div>
+    <div class="hero-eyebrow">
+      <span style="color:${ov.c}">${verdIcon}</span>
+      Tomorrow's open forecast — NASDAQ / QQQ
+    </div>
+    <div class="hero-main">
+      <div class="verdict" style="color:${ov.c}">${ov.v}</div>
+      <div class="conf-block">
+        <span class="conf-label">Confidence</span>
+        <span class="conf-val" style="color:${confC}">${ov.conf}</span>
+      </div>
+    </div>
+    <div class="hero-rationale">${rat}</div>`;
+  document.getElementById('hero').style.display='block';
+
+  renderScorecard();
+
+  // Futures
+  const nqC=d.nq_fut_chg>=0?'#15803d':'#dc2626';
+  const nqBg=d.nq_fut_chg>=0?'#dcfce7':'#fee2e2';
+  const esC=d.es_fut_chg>=0?'#15803d':'#dc2626';
+  const esBg=d.es_fut_chg>=0?'#dcfce7':'#fee2e2';
+  const sbias=d.nq_fut_chg>0.5?'Risk-on':d.nq_fut_chg<-0.5?'Risk-off':'Cautious';
+  const sbC=d.nq_fut_chg>0.5?'#15803d':d.nq_fut_chg<-0.5?'#dc2626':'#5a6072';
+  const sbBg=d.nq_fut_chg>0.5?'#dcfce7':d.nq_fut_chg<-0.5?'#fee2e2':'#f1f3f8';
+  document.getElementById('fut-strip').innerHTML=`
+    <div class="fcard">
+      <div class="fcard-top">
+        <div class="ficon" style="background:${nqBg}">${icon('trending-up',nqC)}</div>
+        <span class="fname">NQ Futures</span>
+      </div>
+      <div class="fval" style="color:${nqC}">${d.nq_fut.toLocaleString()}</div>
+      <div class="fmeta">${d.nq_fut_chg>=0?'+':''}${d.nq_fut_chg.toFixed(2)}% vs prior close</div>
+      <span class="ftag" style="background:${nqBg};color:${nqC}">E-mini · live</span>
+    </div>
+    <div class="fcard">
+      <div class="fcard-top">
+        <div class="ficon" style="background:${esBg}">${icon('bar-chart-2',esC)}</div>
+        <span class="fname">ES Futures</span>
+      </div>
+      <div class="fval" style="color:${esC}">${d.es_fut_chg>=0?'+':''}${d.es_fut_chg.toFixed(2)}%</div>
+      <div class="fmeta">S&amp;P 500 direction</div>
+      <span class="ftag" style="background:${esBg};color:${esC}">E-mini · live</span>
+    </div>
+    <div class="fcard">
+      <div class="fcard-top">
+        <div class="ficon" style="background:${sbBg}">${icon('gauge',sbC)}</div>
+        <span class="fname">Session Bias</span>
+      </div>
+      <div class="fval" style="font-size:20px;color:${sbC};font-family:var(--font)">${sbias}</div>
+      <div class="fmeta">NQ + macro backdrop</div>
+      <span class="ftag" style="background:#f1f3f8;color:#5a6072">score: ${composite}</span>
+    </div>`;
+  document.getElementById('fut-strip').style.display='grid';
+
+  // Score + breakdown
+  function sigIbg(s){ const c=scoreColor(s); return `background:${c.bg};color:${c.text}`; }
+  const sigsHtml=inds.map(ind=>{
+    const s=scores[ind.id], ic=indIconBg(s), lrn=getWeights()[ind.id]!==undefined;
+    const nm=lrn?`${ind.name} <span style="font-size:9px;font-family:var(--mono);background:var(--amber-mid);color:var(--amber);padding:1px 5px;border-radius:4px;margin-left:3px">⚡ adapted</span>`:ind.name;
+    return `<div class="sigrow">
+      <span class="sigleft">
+        <span class="sig-icon" style="background:${ic.bg}">${icon(ind.icon,ic.color)}</span>
+        ${nm}
+      </span>
+      <span class="sigscore" style="color:${ic.color}">${s}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('mid2').innerHTML=`
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:${tier.bg}">${icon('gauge',tier.c)}</div>
+        <span class="card-label">Macro Score</span>
+      </div>
+      <div class="score-num" style="color:${tier.c}">${composite}</div>
+      <div class="tier-pill" style="background:${tier.bg};color:${tier.c}">
+        ${tier.l==='Strong Bull'||tier.l==='Bullish'?ICONS['trending-up'].replace('13','11').replace('13','11'):tier.l==='Strong Bear'||tier.l==='Bearish'?ICONS['trending-down'].replace('13','11').replace('13','11'):ICONS['activity'].replace('13','11').replace('13','11')}
+        ${tier.l}
+      </div>
+      <div class="score-track"><div class="score-fill" style="width:${composite}%;background:${tier.bar}"></div></div>
+      <div class="track-labels"><span>Bear</span><span>Neutral</span><span>Bull</span></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#eff6ff">${icon('list','#2563eb')}</div>
+        <span class="card-label">Signal Breakdown</span>
+      </div>
+      <div class="sigs">${sigsHtml}</div>
+    </div>`;
+  document.getElementById('mid2').style.display='grid';
+
+  // Indicator grid
+  function chipStyle(s){ const c=scoreColor(s); return `background:${c.bg};color:${c.text};border:1px solid ${c.border}`; }
+  function indVal(id){
+    if(id==='fg')     return{v:d.fg.toString(),s:d.fg>d.fg_prev+5?'↑ improving':d.fg<d.fg_prev-5?'↓ weakening':'flat vs last wk'};
+    if(id==='mom')    return{v:(parseFloat(meta.pct_ma)>=0?'+':'')+meta.pct_ma+'%',s:'vs 50d MA · today '+(parseFloat(meta.pct_day)>=0?'+':'')+meta.pct_day+'%'};
+    if(id==='credit') return{v:d.hy_spread+'%',s:'HY spread · avg ~4.5%'};
+    if(id==='vix')    return{v:d.vix_close.toFixed(1),s:'VIX · '+meta.vix_dir+' from '+d.vix_prev.toFixed(1)};
+    if(id==='aaii')   return{v:(parseFloat(meta.absp)>=0?'+':'')+meta.absp+'%',s:'bull−bear · avg +6.5%'};
+    if(id==='rsi')    return{v:d.spy_rsi.toString(),s:d.spy_rsi<30?'oversold':d.spy_rsi>70?'overbought':'neutral range'};
+    if(id==='yield')  return{v:(parseFloat(meta.ysp)>=0?'+':'')+meta.ysp+'%',s:'10Y − 2Y spread'};
+  }
+  document.getElementById('igrid').innerHTML=inds.map(ind=>{
+    const s=scores[ind.id],ic=indIconBg(s),iv2=indVal(ind.id);
+    const lW=getWeights()[ind.id];
+    const wtLbl=lW!==undefined?`<span style="color:var(--amber);font-weight:600">${lW}%</span> <span style="color:var(--text3)">(was ${ind.baseWt}%)</span>`:`${ind.wt}%`;
+    return `<div class="icard">
+      <div class="icard-top">
+        <div class="iicon" style="background:${ic.bg}">${icon(ind.icon,ic.color)}</div>
+        <span class="iname">${ind.name}</span>
+      </div>
+      <div class="ival" style="color:${ic.color}">${iv2.v}</div>
+      <div class="isub">${iv2.s}</div>
+      <span class="ichip" style="${chipStyle(s)}">${s}/100</span>
+      <div class="imini"><div class="iminifill" style="width:${s}%;background:${ic.color}"></div></div>
+      <div class="iwt">${wtLbl}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('igrid').style.display='grid';
+
+  // Catalysts
+  const tc={bull:{bg:'#f0fdf4',t:'#15803d'},bear:{bg:'#fef2f2',t:'#dc2626'},neutral:{bg:'#f1f3f8',t:'#5a6072'}};
+  const newsHtml=(d.news||[]).map(n=>{ const c=tc[n.tone]||tc.neutral; return `<div class="ni"><span class="ntag" style="background:${c.bg};color:${c.t}">${n.tag}</span><span>${n.text}</span></div>`; }).join('');
+  document.getElementById('ncard').innerHTML=`
+    <div class="nhdr">
+      <div class="nicon">${icon('newspaper','#2563eb')}</div>
+      Macro catalysts · what's driving tomorrow
+    </div>
+    <div class="nitems">${newsHtml}</div>`;
+  document.getElementById('ncard').style.display='block';
+  document.getElementById('footer-actions').style.display='flex';
+  renderMethodology(inds);
+  document.getElementById('meth').style.display='block';
+  document.getElementById('footer').style.display='block';
+}
+
+function renderMethodology(inds){
+  document.getElementById('meth-rows').innerHTML=inds.map(ind=>{
+    const lrn=getWeights()[ind.id];
+    const wtEl=lrn!==undefined
+      ?`<span class="mwt mwt-learned">${lrn}%</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:5px">base ${ind.baseWt}%</span>`
+      :`<span class="mwt">${ind.wt}%</span>`;
+    return `<div class="mrow"><span class="mrow-name">${ind.name}</span><span style="color:var(--text3);font-size:11px">${ind.desc}</span>${wtEl}</div>`;
+  }).join('');
+}
+
+// ── UI helpers ────────────────────────────────────────────
+function setLoading(on,msg){
+  document.getElementById('loading').style.display=on?'flex':'none';
+  if(msg) document.getElementById('loading-msg').textContent=msg;
+  const btn=document.getElementById('refresh-btn');
+  if(on){btn.classList.add('spinning');btn.disabled=true;}
+  else{btn.classList.remove('spinning');btn.disabled=false;}
+}
+function showError(msg){ const b=document.getElementById('error-bar'); document.getElementById('error-msg').textContent=msg; b.style.display='flex'; }
+function hideError(){ document.getElementById('error-bar').style.display='none'; }
+</script>
+</body>
+</html>

@@ -452,6 +452,21 @@ function shouldAutoRun(ts){
   return false;
 }
 
+async function loadCachedPicks(){
+  try{
+    const r = await fetch('/api/picks');
+    if(!r.ok) return null;
+    const d = await r.json();
+    if(!d.cached || !d.picks?.length) return null;
+    // Only use server cache if it's from today and less than 8 hours old
+    const cachedAt = new Date(d.cached_at);
+    const ageMs = Date.now() - cachedAt.getTime();
+    const sameDay = cachedAt.toDateString() === new Date().toDateString();
+    if(!sameDay || ageMs > 8*60*60*1000) return null;
+    return d;
+  }catch(e){ return null; }
+}
+
 window.addEventListener('load', async ()=>{
   const key = getKey();
   if(!key){ document.getElementById('key-screen').style.display='flex'; return; }
@@ -459,13 +474,23 @@ window.addEventListener('load', async ()=>{
   updateMassiveBadge();
   await tryAutoResolve();
   const raw=localStorage.getItem(K.data), ts=localStorage.getItem(K.ts);
+
+  // Try server cache first (from scheduled function)
+  const serverData = await loadCachedPicks();
+  if(serverData){
+    localStorage.setItem(K.data, JSON.stringify(serverData));
+    localStorage.setItem(K.ts, Date.now().toString());
+    render(serverData);
+    return;
+  }
+
+  // Fall back to localStorage or live run
   if(raw && ts && !shouldAutoRun(ts)){
     try{
       render(JSON.parse(raw));
       if(Date.now()-parseInt(ts,10)>STALE_MS) document.getElementById('nbar-stale').style.display='flex';
     }catch(e){ fetchAndRender(); }
   } else {
-    // Auto-run: stale data or new day
     fetchAndRender();
   }
 });
@@ -1511,7 +1536,8 @@ function savePicks(picks,date){
 
 // ── Render ────────────────────────────────────────────────
 function render(d){
-  document.getElementById('ts').textContent=d.date+' · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const cachedLabel = d.cached && d.generated_at ? ` · ⚡ Pre-cached ${d.generated_at}` : '';
+  document.getElementById('ts').textContent=d.date+' · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+cachedLabel;
   if(d.picks) savePicks(d.picks,d.date);
   renderGateBar(d.gate?.raw||getGate());
 
