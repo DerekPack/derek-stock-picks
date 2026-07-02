@@ -1692,7 +1692,8 @@ function renderDelta(d){
   const sessionColors = {
     'early-morning': {bg:'rgba(156,39,176,.12)',t:'#9c27b0',label:'5:33 AM Early'},
     'pre-market':    {bg:'rgba(33,150,243,.12)', t:'#2196f3',label:'6:30 AM Pre-Mkt'},
-    'evening':       {bg:'rgba(255,152,0,.12)',  t:'#ff9800',label:'5:00 PM Evening'},
+    'at-close':      {bg:'rgba(38,166,154,.12)', t:'#26a69a',label:'2:15 PM Close'},
+    'evening':       {bg:'rgba(255,152,0,.12)',  t:'#ff9800',label:'5:40 PM Evening'},
   };
   const sc = sessionColors[d.session] || {bg:'rgba(255,255,255,.06)',t:'#aaa',label:d.session||'Scheduled'};
   const priorLabel = d.prior_session
