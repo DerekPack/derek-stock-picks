@@ -1,0 +1,8 @@
+{
+  "name": "derek-stock-picks",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9",
+    "@netlify/functions": "^5.3.0"
+  }
+}
